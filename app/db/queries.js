@@ -108,12 +108,7 @@ function _getConsentsQuery(filter = {}, count = false, limit = 10, offset = 0) {
         where_clause = 'WHERE customer_id = ?'
     }
 
-    const result = [];
-
-    if (count) {
-        result.push('SELECT count(*) AS count FROM (');
-    }
-    result.push('SELECT');
+    const result = ['SELECT'];
 
     if (count) {
         result.push('count(*) AS count');
@@ -125,6 +120,56 @@ function _getConsentsQuery(filter = {}, count = false, limit = 10, offset = 0) {
 
     if (!count) {
         result.push('ORDER BY signed_surname, signed_name, signed_patronimic, id');
+        result.push(`LIMIT ${limit} OFFSET ${offset}`);
+    }
+
+    return result.join(' ');
+}
+
+function getEmailsQuery(filter = {}, limit = 10, offset = 0) {
+    return _getEmailsQuery(filter, false, limit, offset);
+}
+
+function getEmailsCountQuery(filter = {}, limit = 10, offset = 0) {
+    return _getEmailsQuery(filter, false, limit, offset);
+}
+
+function _getEmailsQuery(filter = {}, count = false, limit = 10, offset = 0) {
+    filter = filter || {};
+    count = !!count;
+    limit = limit || 10;
+    offset = offset || 0;
+
+    let where_clause = '';
+    const where_conditions = [];
+
+    if (filter.id) {
+        where_conditions.push('emails.customer_id = ?');
+    }
+    if (filter.template) {
+        where_conditions.push('template_id = ?');
+    }
+    if (filter.isOpen) {
+        where_conditions.push('is_open = ?');
+    }
+
+    if (where_conditions.length) {
+        where_clause = 'WHERE ' + where_conditions.join(' AND ');
+    }
+
+    const result = ['SELECT'];
+
+    if (count) {
+        result.push('count(*) AS count');
+    } else {
+        result.push('*');
+    }
+    result.push('FROM emails');
+    result.push('LEFT JOIN customers c on c.id = emails.customer_id');
+    result.push(where_clause);
+
+    if (!count) {
+        result.push('ORDER BY surname, name, patronimic, emails.id');
         result.push(`LIMIT ${limit} OFFSET ${offset}`);
     }
 
@@ -145,6 +190,8 @@ module.exports = {
     getCustomersCountQuery: getCustomersCountQuery,
     getConsentsQuery: getConsentsQuery,
     getConsentsCountQuery: getConsentsCountQuery,
+    getEmailsQuery: getEmailsQuery,
+    getEmailsCountQuery: getEmailsCountQuery,
     insertConsentQuery: insertConsentQuery,
     insertEmailQuery: insertEmailQuery,
 }

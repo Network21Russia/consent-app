@@ -62,7 +62,14 @@
                     </td>
                     <td class="align-middle text-center"><%= customer.tickets %></td>
                     <td class="align-middle text-center"><%= customer.rest_tickets %></td>
-                    <td class="align-middle text-center"><%= customer.letter_send ? 'да' : 'нет' %></td>
+                    <td class="align-middle text-center">
+                        <% if(customer.letter_send) { %>
+                            <a href="/admin/emails/<%= customer.id %>" title="Письма">
+                                да
+                            </a>
+                        <% } else { %>
+                            нет
+                        <% } %>
                     <td class="align-middle text-center"><%= customer.letter_opened ? 'да' : 'нет' %></td>
                     <td class="align-middle text-center">
                         <% if(customer.has_consents) { %>
