@@ -14,11 +14,7 @@ router
     .get('/customer/:hash', require('./handlers/customer-consent-view'))
     .post('/customer/:hash', KoaBody(), require('./handlers/customer-consent-sign'))
 
-    .get('/admin', async (ctx, next) => {
-        return ctx.render('admin', {
-            attributes: []
-        })
-    })
+    .get('/admin', require('./handlers/admin-customers'))
 ;
 
 

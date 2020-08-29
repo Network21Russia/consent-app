@@ -1,7 +1,17 @@
 'use strict';
 
 function getCustomersQuery(filter = {}, limit = 10, offset = 0) {
+    return _getCustomersQuery(filter, false, limit, offset);
+}
+
+function getCustomersCountQuery(filter = {}) {
+    return _getCustomersQuery(filter, true);
+}
+
+
+function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) {
     filter = filter || {};
+    count = !!count;
     limit = limit || 10;
     offset = offset || 0;
 
@@ -23,6 +33,11 @@ function getCustomersQuery(filter = {}, limit = 10, offset = 0) {
     } else if (filter.without_rest) {
         having_conditions.push('rest_tickets <= 0')
     }
+    if (filter.with_consent) {
+        having_conditions.push('has_consents = 1')
+    } else if (filter.without_consent) {
+        having_conditions.push('has_consents = 0')
+    }
     if (filter.letter_send) {
         having_conditions.push('letter_send = 1')
     } else if (filter.letter_not_send) {
@@ -38,25 +53,40 @@ function getCustomersQuery(filter = {}, limit = 10, offset = 0) {
         having_clause = 'HAVING ' + having_conditions.join(' AND ');
     }
 
-    return `SELECT customers.id,
-               customers.surname,
-               customers.name,
-               customers.patronimic,
-               customers.email,
-               customers.tickets,
-               HEX(hash)                                                   as url_hash,
-               NOT ISNULL(emails.id)                                       AS letter_send,
-               IF(SUM(IFNULL(emails.is_open, 0)) > 0, 1, 0)                AS letter_opened,
-               NOT ISNULL(consents.id)                                     AS has_consents,
-               customers.tickets - SUM(IFNULL(consents.signed_tickets, 0)) AS rest_tickets
-        FROM customers
-                 LEFT JOIN emails ON emails.customer_id = customers.id ${emails_join_condition}
-                 LEFT JOIN consents ON consents.customer_id = customers.id
-        ${where_clause}
-        GROUP BY customers.id
-        ${having_clause}
-        ORDER BY surname, name, patronimic, id
-        LIMIT ${limit} OFFSET ${offset}`;
+    const result = [];
+
+    if (count) {
+        result.push('SELECT count(*) AS count FROM (');
+    }
+    result.push('SELECT ');
+    result.push(`
+           customers.id,
+           customers.surname,
+           customers.name,
+           customers.patronimic,
+           customers.email,
+           customers.tickets,
+           HEX(hash)                                                   as url_hash,
+           NOT ISNULL(emails.id)                                       AS letter_send,
+           IF(SUM(IFNULL(emails.is_open, 0)) > 0, 1, 0)                AS letter_opened,
+           NOT ISNULL(consents.id)                                     AS has_consents,
+           customers.tickets - SUM(IFNULL(consents.signed_tickets, 0)) AS rest_tickets
+    `);
+    result.push('FROM customers');
+    result.push(`LEFT JOIN emails ON emails.customer_id = customers.id ${emails_join_condition}`);
+    result.push('LEFT JOIN consents ON consents.customer_id = customers.id');
+    result.push(where_clause);
+    result.push('GROUP BY customers.id');
+    result.push(having_clause);
+
+    if (count) {
+            result.push(') t');
+    } else {
+        result.push('ORDER BY surname, name, patronimic, id');
+        result.push(`LIMIT ${limit} OFFSET ${offset}`);
+    }
+
+    return result.join(' ');
 }
 
 function insertConsentQuery() {
@@ -69,6 +99,7 @@ function insertEmailQuery() {
 
 module.exports = {
     getCustomersQuery: getCustomersQuery,
+    getCustomersCountQuery: getCustomersCountQuery,
     insertConsentQuery: insertConsentQuery,
     insertEmailQuery: insertEmailQuery,
 }

@@ -42,6 +42,7 @@ function start(logger) {
                 ctx.state.title = 'Network TwentyOne';
                 ctx.state.declension = declension;
                 ctx.state.formatDate = formatDate;
+                ctx.state.menu = {};
 
                 await next()
             } catch (err) {
