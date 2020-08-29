@@ -1,0 +1,64 @@
+<div class="row">
+    <div class="col">
+
+        <form action="/customer/<%= customer.url_hash %>" method="post">
+
+            <h1 class="text-center">Соглашение</h1>
+
+            <table border="0" width="100%">
+                <tr>
+                    <td>
+                        <p>г. Самара</p>
+                    </td>
+                    <td>
+                        <p class="text-right"><%= formatDate(new Date())%></p>
+                    </td>
+                </tr>
+            </table>
+
+            <p>Я, <%= ([customer.surname, customer.name, customer.patronimic].filter(Boolean).join(' ')).trim() %>,
+                имеющий в наличии <%- declension(customer.rest_tickets, "билет", "билета", "билетов") %>
+                на мероприятие, согласен на замену формата мероприятия для&nbsp;
+                <% if(!isSignMode) { %>
+                    <label>
+                        <select name="tickets_count">
+                            <% for (var i = 1; i <= customer.rest_tickets;  i++ ) { %>
+                                <option value="<%= i %>" <%= i === customer.rest_tickets ? 'selected' : '' %> >
+                                    <%- declension(i, "билета", "билетов", "билетов") %></option>
+                            <% } %>
+                        </select>
+                    </label>.
+                <% } else { %>
+                    <%- declension(customer.rest_tickets, "билета", "билетов", "билетов") %>.
+                <% } %>
+                Претензий к ООО «Н21 Ивентс» по поводу замены формата не имею.
+            </p>
+            <% if(!isSignMode){ %>
+                <p>
+                    <button type="submit" class="btn btn-primary">Подписать</button>
+                </p>
+            <% } else { %>
+                <table border="0" width="100%">
+                    <tr>
+                        <td>
+                            <p>
+                                <u>
+                                <%= customer.surname %>
+                                    <%= ([customer.name[0], (customer.patronimic || '')[0]].filter(Boolean).join('. ')).trim() %>.
+                                </u>
+                            </p>
+                        </td>
+                        <td>
+                            <p>
+                                <u>
+                                <%= consentSigner %>
+                                </u>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+            <% } %>
+        </form>
+    </div>
+</div>

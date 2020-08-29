@@ -11,6 +11,8 @@ const cacheControl = require('koa-cache-control');
 const shutdown = require('koa-graceful-shutdown');
 
 const config = require('../config/config');
+const declension = require('./utils/declension');
+const formatDate = require('./utils/format-date');
 const router = require('./router');
 
 function start(logger) {
@@ -38,6 +40,8 @@ function start(logger) {
             try {
                 ctx.state.officialSite = config.officialSite;
                 ctx.state.title = 'Network TwentyOne';
+                ctx.state.declension = declension;
+                ctx.state.formatDate = formatDate;
 
                 await next()
             } catch (err) {
@@ -47,16 +51,20 @@ function start(logger) {
                     ctx.body = 'Auth required';
                 } else {
                     ctx.log.error(err)
-                    return ctx.render('error');
+                    return ctx.render(ctx.status);
                 }
             }
         })
-        .use(mount(config.adminRoutesNamespace, auth({name: config.adminLogin, pass: config.adminPassword})))
-        .use(router.routes())
-        .use(router.allowedMethods())
         .use(cacheControl({
             noCache: true
         }))
+        .use(mount(config.adminRoutesNamespace, auth({name: config.adminLogin, pass: config.adminPassword})))
+        .use(router.routes())
+        .use(router.allowedMethods())
+        .use(async (ctx, next) => {
+            ctx.status = 404;
+            return ctx.render('404');
+        })
         .use(shutdown(server));
 
     server.listen(config.serverPort, '0.0.0.0', () => {
