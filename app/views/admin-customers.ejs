@@ -81,10 +81,12 @@
                         <% } %>
                     </td>
                     <td class="align-middle text-center text-nowrap">
+                        <% if(customer.rest_tickets > 0) { %>
                         <a href="/admin/resend/<%= customer.id %>" title="Отправить повторно"
                            class="btn btn-warning btn-sm">
                             <i class="fas fa-envelope"></i>
                         </a>
+                        <% } %>
                     </td>
                 </tr>
                 <% }); %>
