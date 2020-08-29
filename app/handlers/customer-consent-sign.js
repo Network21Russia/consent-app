@@ -1,5 +1,7 @@
 'use strict';
 
+const path = require('path');
+const pdf = require('html-pdf');
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
@@ -40,20 +42,29 @@ module.exports = async (ctx, next) => {
     }
 
     query = insertConsentQuery({hash: hash});
-    await db.executeQuery(query,
+    const insertResult = await db.executeQuery(query,
         [customer.id, customer.email, customer.name, customer.surname, customer.patronimic, customer.rest_tickets]);
 
     const rendered = await ctx.render('consent', {
         customer: customer,
         consentSigner: config.consentSigner,
         isSignMode: true,
-        layout: false,
+        layout: 'pdf',
         writeResp: false,
     })
 
-    // console.log(rendered);
-    // todo: create and sign pdf,
-    // todo: send email
+    const pdfOptions = {
+        format: 'A4',
+        orientation: "portrait",
+        border: '2cm',
+    };
+
+    const output = path.join(__dirname, `../../pdf/consent-${insertResult.insertId}.pdf`)
+
+    pdf.create(rendered, pdfOptions).toFile(output, function (err, res) {
+        if (err) return console.log(err);
+        // todo: send email
+    });
 
     return ctx.render(template, {
         customer: customer
