@@ -1,0 +1,29 @@
+{
+  "name": "consent-app",
+  "version": "1.0.0",
+  "description": "Consent app for Network 21 Russia",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Evgenii Strigo",
+  "license": "ISC",
+  "dependencies": {
+    "@koa/router": "^9.4.0",
+    "dsn-parser": "^1.0.3",
+    "koa": "^2.13.0",
+    "koa-basic-auth": "^4.0.0",
+    "koa-body": "^4.2.0",
+    "koa-cache-control": "^2.0.0",
+    "koa-convert": "^1.2.0",
+    "koa-ejs": "^4.3.0",
+    "koa-graceful-shutdown": "^1.1.0",
+    "koa-mount": "^4.0.0",
+    "koa-req-logger": "^1.5.3",
+    "mysql": "^2.18.1",
+    "mysql-flexi-promise": "^1.0.1",
+    "mysql2": "^2.1.0",
+    "pino": "^6.5.1",
+    "sqlmigrate": "^2.1.0"
+  }
+}

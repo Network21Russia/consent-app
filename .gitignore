@@ -1,0 +1,11 @@
+.idea
+node_modules
+coverage
+.nyc_output
+yarn.lock
+.DS_Store
+.vscode
+*.log
+*.env
+coverage.lcov
+build
