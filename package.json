@@ -26,6 +26,7 @@
     "mysql-flexi-promise": "^1.0.1",
     "mysql2": "^2.1.0",
     "pino": "^6.5.1",
+    "postmark": "^2.5.5",
     "sqlmigrate": "^2.1.0"
   }
 }

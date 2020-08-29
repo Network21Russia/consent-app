@@ -2,10 +2,11 @@
 
 const path = require('path');
 const pdf = require('html-pdf');
+const postmark = require("postmark");
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
-const {getCustomersQuery, insertConsentQuery} = require('../db/queries')
+const {getCustomersQuery, insertConsentQuery, insertEmailQuery} = require('../db/queries')
 
 module.exports = async (ctx, next) => {
     ctx.state.title = 'Соглашение';
@@ -41,7 +42,7 @@ module.exports = async (ctx, next) => {
         }
     }
 
-    query = insertConsentQuery({hash: hash});
+    query = insertConsentQuery();
     const insertResult = await db.executeQuery(query,
         [customer.id, customer.email, customer.name, customer.surname, customer.patronimic, customer.rest_tickets]);
 
@@ -59,15 +60,53 @@ module.exports = async (ctx, next) => {
         border: '2cm',
     };
 
-    const output = path.join(__dirname, `../../pdf/consent-${insertResult.insertId}.pdf`)
+    const fname = `consent-${insertResult.insertId}.pdf`;
+    const output = path.join(__dirname, '../../pdf/', fname)
 
-    pdf.create(rendered, pdfOptions).toFile(output, function (err, res) {
-        if (err) return console.log(err);
-        // todo: send email
-    });
+    const buffer = await renderPdf(rendered, pdfOptions);
+
+    const sendingOptions = {
+        TemplateId: config.emailTemplateConsentPdf,
+        From: config.emailSenderFrom,
+        To: customer.email,
+        TemplateModel: {
+            name: ([customer.name, customer.patronimic].filter(Boolean).join(' ')).trim(),
+        },
+        Attachments: [
+            {
+                "Name": fname,
+                "Content": buffer.toString('base64'),
+                "ContentType": "application/pdf"
+            }
+        ],
+    };
+
+    const sendingControlOptions = JSON.parse(JSON.stringify(sendingOptions));
+    sendingControlOptions.To = config.emailAdminEmail;
+    sendingControlOptions.TemplateModel.isAdminCopy = true;
+
+    const client = new postmark.ServerClient(config.emailpostmarkToken);
+    const sendingResult = await client.sendEmailBatchWithTemplates([sendingOptions, sendingControlOptions]);
+
+    for (const r of sendingResult) {
+        if (r.ErrorCode) {
+            return;
+        }
+        const query = insertEmailQuery();
+        const insertResult = await db.executeQuery(query,[r.MessageID, customer.id, config.emailTemplateConsentPdf]);
+    }
 
     return ctx.render(template, {
         customer: customer
     });
 
 };
+
+async function renderPdf(html, options) {
+    return new Promise((resolve, reject) => {
+        pdf.create(html, options).toBuffer(async function (err, buffer) {
+            if (err) return reject(err);
+            resolve(buffer);
+        });
+    });
+}

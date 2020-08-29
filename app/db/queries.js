@@ -63,7 +63,12 @@ function insertConsentQuery() {
     return 'INSERT INTO `consents`(`customer_id`, `signed_email`, `signed_name`, `signed_surname`, `signed_patronimic`, `signed_tickets`) VALUES (?, ?, ?, ?, ?, ?)'
 }
 
+function insertEmailQuery() {
+    return "INSERT INTO `emails`(`external_id`, `customer_id`, `template_id`) VALUES (UNHEX(REPLACE(?, '-', '')), ?, ?)";
+}
+
 module.exports = {
     getCustomersQuery: getCustomersQuery,
     insertConsentQuery: insertConsentQuery,
+    insertEmailQuery: insertEmailQuery,
 }

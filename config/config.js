@@ -33,6 +33,7 @@ const config = {
 
     emailpostmarkToken: getEnvVariable('EMAIL_POSTMARK_TOKEN', ''),
     emailSenderFrom: getEnvVariable('EMAIL_SENDER_FROM', ''),
+    emailAdminEmail: getEnvVariable('EMAIL_ADMIN_EMAIL', ''),
     emailTemplateConsentRequest: +getEnvVariable('EMAIL_TEMPLATE_CONSENT_REQUEST', ''),
     emailTemplateConsentPdf: +getEnvVariable('EMAIL_TEMPLATE_CONSENT_PDF', ''),
 
