@@ -26,7 +26,7 @@ module.exports = async (ctx, next) => {
 
     let template = 'consent';
     if (customer.rest_tickets <= 0) {
-        template = 'no_consent';
+        template = 'no-consent';
     }
 
     return ctx.render(template, {

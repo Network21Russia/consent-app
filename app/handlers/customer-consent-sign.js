@@ -28,9 +28,9 @@ module.exports = async (ctx, next) => {
 
     const customer = result[0];
 
-    let template = 'consent_signed';
+    let template = 'consent-signed';
     if (customer.rest_tickets <= 0) {
-        template = 'no_consent';
+        template = 'no-consent';
 
         return ctx.render(template, {
             customer: customer
