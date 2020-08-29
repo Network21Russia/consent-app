@@ -15,6 +15,8 @@ router
     .post('/customer/:hash', KoaBody(), require('./handlers/customer-consent-sign'))
 
     .get('/admin', require('./handlers/admin-customers'))
+    .get('/admin/consents', require('./handlers/admin-consents'))
+    .get('/admin/consents/:id', require('./handlers/admin-consents'))
 ;
 
 

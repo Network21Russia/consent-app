@@ -8,7 +8,6 @@ function getCustomersCountQuery(filter = {}) {
     return _getCustomersQuery(filter, true);
 }
 
-
 function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) {
     filter = filter || {};
     count = !!count;
@@ -89,6 +88,50 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
     return result.join(' ');
 }
 
+function getConsentsQuery(filter = {}, limit = 10, offset = 0) {
+    return _getConsentsQuery(filter, false, limit, offset);
+}
+
+function getConsentsCountQuery(filter = {}, limit = 10, offset = 0) {
+    return _getConsentsQuery(filter, false, limit, offset);
+}
+
+function _getConsentsQuery(filter = {}, count = false, limit = 10, offset = 0) {
+    filter = filter || {};
+    count = !!count;
+    limit = limit || 10;
+    offset = offset || 0;
+
+    let where_clause = '';
+
+    if (filter.id) {
+        where_clause = 'WHERE customer_id = ?'
+    }
+
+    const result = [];
+
+    if (count) {
+        result.push('SELECT count(*) AS count FROM (');
+    }
+    result.push('SELECT');
+
+    if (count) {
+        result.push('count(*) AS count');
+    } else {
+        result.push('*');
+    }
+    result.push('FROM consents');
+    result.push(where_clause);
+
+    if (!count) {
+        result.push('ORDER BY signed_surname, signed_name, signed_patronimic, id');
+        result.push(`LIMIT ${limit} OFFSET ${offset}`);
+    }
+
+    return result.join(' ');
+}
+
+
 function insertConsentQuery() {
     return 'INSERT INTO `consents`(`customer_id`, `signed_email`, `signed_name`, `signed_surname`, `signed_patronimic`, `signed_tickets`) VALUES (?, ?, ?, ?, ?, ?)'
 }
@@ -100,6 +143,8 @@ function insertEmailQuery() {
 module.exports = {
     getCustomersQuery: getCustomersQuery,
     getCustomersCountQuery: getCustomersCountQuery,
+    getConsentsQuery: getConsentsQuery,
+    getConsentsCountQuery: getConsentsCountQuery,
     insertConsentQuery: insertConsentQuery,
     insertEmailQuery: insertEmailQuery,
 }

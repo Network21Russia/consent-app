@@ -1,0 +1,55 @@
+<div class="row">
+    <div class="col">
+        <h1><%= title %></h1>
+
+        <div class="table-responsive mt-4">
+            <table class="table table-striped table-hover table-bordered">
+                <thead class="thead-dark text-center">
+                <tr>
+                    <th class="align-middle" scope="col">Фамилия</th>
+                    <th class="align-middle" scope="col">Имя</th>
+                    <th class="align-middle" scope="col">Отчество</th>
+                    <th class="align-middle" scope="col">E-mail</th>
+                    <th class="align-middle" scope="col">Дата</th>
+                    <th class="align-middle" scope="col">Билеты</th>
+                    <th class="align-middle" scope="col">Скачать</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% consents.forEach( function(consent) { %>
+                    <tr>
+                        <td class="align-middle"><%= consent.signed_surname %></td>
+                        <td class="align-middle"><%= consent.signed_name %></td>
+                        <td class="align-middle"><%= consent.signed_patronimic %></td>
+                        <td class="align-middle"><%= consent.signed_email %></td>
+                        <td class="align-middle text-center"><%= formatDate(consent.datetime) %></td>
+                        <td class="align-middle text-center"><%= consent.signed_tickets %></td>
+                        <td class="align-middle text-center text-nowrap">
+                            <a href="/admin/pdf/<%= consent.id %>" title="Скачать"
+                               class="btn btn-success btn-sm">
+                                <i class="far fa-file-pdf"></i>
+                            </a>
+                        </td>
+                    </tr>
+                <% }); %>
+                </tbody>
+            </table>
+        </div>
+
+        <% if(showPagination) { %>
+            <nav aria-label="Page navigation" class="float-right">
+                <ul class="pagination">
+                    <% for (var i = 0; i < pages; i++)  { %>
+                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                            <a class="page-link"
+                               href="<%= menu[activeMenu].path %><%= filter_query %>&offset=<%= i %>">
+                                <%= i + 1 %>
+                            </a>
+                        </li>
+                    <% } %>
+                </ul>
+            </nav>
+        <% } %>
+
+    </div>
+</div>
