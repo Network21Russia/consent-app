@@ -187,6 +187,10 @@ function insertEmailQuery() {
     return "INSERT INTO `emails`(`external_id`, `customer_id`, `template_id`) VALUES (UNHEX(REPLACE(?, '-', '')), ?, ?)";
 }
 
+function setEmailOpenQuery() {
+    return "UPDATE `emails` SET `is_open` = 1,`open_datetime` = CURRENT_TIMESTAMP WHERE external_id = UNHEX(REPLACE(?, '-', ''))";
+}
+
 module.exports = {
     getCustomersQuery: getCustomersQuery,
     getCustomersCountQuery: getCustomersCountQuery,
@@ -196,4 +200,5 @@ module.exports = {
     getEmailsCountQuery: getEmailsCountQuery,
     insertConsentQuery: insertConsentQuery,
     insertEmailQuery: insertEmailQuery,
+    setEmailOpenQuery: setEmailOpenQuery,
 }

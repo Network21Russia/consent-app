@@ -15,6 +15,8 @@ router
     .get('/customer/:hash', require('./handlers/customer-consent-view'))
     .post('/customer/:hash', KoaBody(), require('./handlers/customer-consent-sign'))
 
+    .post('/webhook/open', KoaBody(), require('./handlers/email-open-webhook'))
+
     .get('/admin', require('./handlers/admin-customers'))
 
     .get('/admin/consents', require('./handlers/admin-consents'))
