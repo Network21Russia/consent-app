@@ -15,4 +15,8 @@ module.exports = {
         path: config.adminRoutesNamespace + '/consents',
         name: "Соглашения",
     },
+    send: {
+        path: config.adminRoutesNamespace + '/send',
+        name: "Запуск рассылки",
+    },
 };

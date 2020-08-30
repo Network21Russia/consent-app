@@ -22,6 +22,9 @@ router
 
     .get('/admin/emails', require('./handlers/admin-emails'))
     .get('/admin/emails/:id', require('./handlers/admin-emails'))
+
+    .get('/admin/send', require('./handlers/admin-send'))
+    .get('/admin/send/:hash', require('./handlers/admin-send'))
 ;
 
 

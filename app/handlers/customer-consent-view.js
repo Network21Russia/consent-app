@@ -14,7 +14,7 @@ module.exports = async (ctx, next) => {
         ctx.throw(500);
     }
 
-    const query = getCustomersQuery({hash: hash, email_template: true});
+    const query = getCustomersQuery({hash: true, email_template: true});
     const db = DatabaseConnection.getInstance(config.db);
     const result = await db.executeQuery(query, [config.emailTemplateConsentRequest, hash]);
 

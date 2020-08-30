@@ -18,9 +18,9 @@ module.exports = async (ctx, next) => {
 
     const tickets_count = (ctx.request.body.tickets_count || 0) * 1;
 
-    let query = getCustomersQuery({hash: hash});
+    let query = getCustomersQuery({hash: true, email_template: true});
     const db = DatabaseConnection.getInstance(config.db);
-    const result = await db.executeQuery(query, [hash]);
+    const result = await db.executeQuery(query, [config.emailTemplateConsentRequest, hash]);
 
     if (!(Array.isArray(result) && result.length)) {
         ctx.throw(500);
@@ -90,7 +90,7 @@ module.exports = async (ctx, next) => {
 
     for (const r of sendingResult) {
         if (r.ErrorCode) {
-            return;
+            continue;
         }
         const query = insertEmailQuery();
         const insertResult = await db.executeQuery(query,[r.MessageID, customer.id, config.emailTemplateConsentPdf]);

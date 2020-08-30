@@ -1,0 +1,28 @@
+<div class="row">
+    <div class="col">
+        <h1><%= title %></h1>
+
+        <% if(finished) { %>
+            <p>Рассылка успешно завершена.</p>
+        <% } else if (started) { %>
+            <p>Рассылка в процессе, пожалуйста не закрывайте вкладку браузера до ее окончания.</p>
+            <script>
+                setTimeout(function() {
+                    window.location.replace('<%= menu[activeMenu].path %>/<%= hash ? hash : ''%><%-filter_query%>');
+                }, 1000);
+            </script>
+        <% } else { %>
+            <form method="get" action="<%= menu[activeMenu].path %>" class="my-4">
+                <p>Нажимая на кнопку &laquo;Старт&raquo; вы запускаете рассылку. Письма будут разосланы покупателям,
+                    имеющим не нулевые остатки по билетам.</p>
+
+                <input type="hidden" name="started" value="1">
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary my-1">Старт</button>
+                </div>
+            </form>
+        <% } %>
+
+    </div>
+</div>

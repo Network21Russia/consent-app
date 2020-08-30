@@ -32,3 +32,9 @@ main()
         logger.error(err);
         process.exit(1);
     });
+
+/*
+todo:
+вебхук на открытие письма
+скачать pdf
+*/
