@@ -73,7 +73,7 @@
                     <td class="align-middle text-center"><%= customer.letter_opened ? 'да' : 'нет' %></td>
                     <td class="align-middle text-center">
                         <% if(customer.has_consents) { %>
-                            <a href="/admin/consents/<%= customer.id %>"title="Соглашения">
+                            <a href="/admin/consents/<%= customer.id %>" title="Соглашения">
                                 да
                             </a>
                         <% } else { %>
@@ -84,7 +84,7 @@
                         <% if(customer.rest_tickets > 0) { %>
                         <a href="/admin/send/<%= customer.url_hash %>?started=1" title="Отправить повторно"
                            class="btn btn-warning btn-sm">
-                            <i class="fas fa-envelope"></i>
+                            <i class="icon send"></i>
                         </a>
                         <% } %>
                     </td>

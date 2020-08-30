@@ -6,6 +6,8 @@ const http = require('http');
 const render = require('koa-ejs');
 const mount = require('koa-mount');
 const auth = require('koa-basic-auth');
+const compress = require('koa-compress');
+const minifier = require('koa-html-minifier')
 const {KoaReqLogger} = require('koa-req-logger');
 const cacheControl = require('koa-cache-control');
 const shutdown = require('koa-graceful-shutdown');
@@ -36,6 +38,28 @@ function start(logger) {
 
     app
         .use(koaLogger.getMiddleware())
+        .use(compress({
+            threshold: 2048,
+            gzip: {
+                flush: require('zlib').constants.Z_SYNC_FLUSH
+            },
+            deflate: {
+                flush: require('zlib').constants.Z_SYNC_FLUSH,
+            },
+            br: {
+                flush: require('zlib').constants.Z_SYNC_FLUSH,
+            }
+        }))
+        .use(minifier({
+            collapseWhitespace: true,
+            preserveLineBreaks: false,
+            useShortDoctype: true,
+            decodeEntities: true,
+            minifyCSS: true,
+        }))
+        .use(cacheControl({
+            noCache: true
+        }))
         .use(async (ctx, next) => {
             try {
                 ctx.state.officialSite = config.officialSite;
@@ -56,9 +80,6 @@ function start(logger) {
                 }
             }
         })
-        .use(cacheControl({
-            noCache: true
-        }))
         .use(mount(config.adminRoutesNamespace, auth({name: config.adminLogin, pass: config.adminPassword})))
         .use(router.routes())
         .use(router.allowedMethods())

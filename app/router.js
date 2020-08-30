@@ -12,6 +12,11 @@ router
         ctx.redirect(config.officialSite);
     })
 
+    .get('/logo.png', require('./handlers/logo'))
+    .get('/favicon.ico', require('./handlers/favicon'))
+    .get('/robots.txt', require('./handlers/robots'))
+    .get('/styles.css', require('./handlers/styles'))
+
     .get('/customer/:hash', require('./handlers/customer-consent-view'))
     .post('/customer/:hash', KoaBody(), require('./handlers/customer-consent-sign'))
 
