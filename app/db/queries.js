@@ -104,8 +104,10 @@ function _getConsentsQuery(filter = {}, count = false, limit = 10, offset = 0) {
 
     let where_clause = '';
 
-    if (filter.id) {
-        where_clause = 'WHERE customer_id = ?'
+    if (filter.customer_id) {
+        where_clause = 'WHERE customer_id = ?';
+    } else if (filter.id) {
+        where_clause = 'WHERE id = ?';
     }
 
     const result = ['SELECT'];

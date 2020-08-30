@@ -25,6 +25,8 @@ router
 
     .get('/admin/send', require('./handlers/admin-send'))
     .get('/admin/send/:hash', require('./handlers/admin-send'))
+
+    .get('/admin/pdf/:id', require('./handlers/admin-pdf'))
 ;
 
 

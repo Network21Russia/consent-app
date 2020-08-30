@@ -31,6 +31,7 @@ module.exports = async (ctx, next) => {
 
     return ctx.render(template, {
         customer: customer,
+        date: new Date(),
         consentSigner: config.consentSigner,
         isSignMode: false,
     })

@@ -72,7 +72,7 @@ module.exports = async (ctx, next) => {
                 continue;
             }
             const query = insertEmailQuery();
-            const insertResult = await db.executeQuery(query, [r.MessageID, emailToCustomerId[r.To], config.emailTemplateConsentRequest]);
+            await db.executeQuery(query, [r.MessageID, emailToCustomerId[r.To], config.emailTemplateConsentRequest]);
         }
 
         query = getCustomersCountQuery(filter)

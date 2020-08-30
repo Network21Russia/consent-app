@@ -18,7 +18,7 @@ module.exports = async (ctx, next) => {
     const params = [];
     const filter = {};
     if (customerId) {
-        filter.id = true;
+        filter.customer_id = true;
         params.push(customerId)
     }
 

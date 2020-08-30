@@ -1,12 +1,11 @@
 'use strict';
 
-const path = require('path');
-const pdf = require('html-pdf');
 const postmark = require("postmark");
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
 const {getCustomersQuery, insertConsentQuery, insertEmailQuery} = require('../db/queries')
+const renderPdf = require('../utils/render-pdf');
 
 module.exports = async (ctx, next) => {
     ctx.state.title = 'Соглашение';
@@ -48,22 +47,16 @@ module.exports = async (ctx, next) => {
 
     const rendered = await ctx.render('consent', {
         customer: customer,
+        date: new Date(),
         consentSigner: config.consentSigner,
         isSignMode: true,
         layout: 'pdf',
         writeResp: false,
     })
 
-    const pdfOptions = {
-        format: 'A4',
-        orientation: "portrait",
-        border: '2cm',
-    };
-
     const fname = `consent-${insertResult.insertId}.pdf`;
-    const output = path.join(__dirname, '../../pdf/', fname)
 
-    const buffer = await renderPdf(rendered, pdfOptions);
+    const buffer = await renderPdf(rendered);
 
     const sendingOptions = {
         TemplateId: config.emailTemplateConsentPdf,
@@ -93,20 +86,10 @@ module.exports = async (ctx, next) => {
             continue;
         }
         const query = insertEmailQuery();
-        const insertResult = await db.executeQuery(query,[r.MessageID, customer.id, config.emailTemplateConsentPdf]);
+        await db.executeQuery(query,[r.MessageID, customer.id, config.emailTemplateConsentPdf]);
     }
 
     return ctx.render(template, {
         customer: customer
     });
-
 };
-
-async function renderPdf(html, options) {
-    return new Promise((resolve, reject) => {
-        pdf.create(html, options).toBuffer(async function (err, buffer) {
-            if (err) return reject(err);
-            resolve(buffer);
-        });
-    });
-}
