@@ -11,31 +11,47 @@
                         <p>г. Самара</p>
                     </td>
                     <td>
-                        <p class="text-right"><%= formatDate(date)%></p>
+                        <p class="text-right"><%= formatDate(date)%> г.</p>
                     </td>
                 </tr>
             </table>
 
             <p>Я, <%= ([customer.surname, customer.name, customer.patronimic].filter(Boolean).join(' ')).trim() %>,
-                имеющий в наличии <%- declension(customer.rest_tickets, "билет", "билета", "билетов") %>
-                на мероприятие, согласен на замену формата мероприятия для&nbsp;
-                <% if(!isSignMode) { %>
-                    <label>
-                        <select name="tickets_count">
-                            <% for (var i = 1; i <= customer.rest_tickets;  i++ ) { %>
-                                <option value="<%= i %>" <%= i === customer.rest_tickets ? 'selected' : '' %> >
-                                    <%- declension(i, "билета", "билетов", "билетов") %></option>
-                            <% } %>
-                        </select>
-                    </label>.
-                <% } else { %>
-                    <%- declension(customer.rest_tickets, "билета", "билетов", "билетов") %>.
+                <%=genderify(customer.gender, 'имеющий', 'имеющая')%>
+                в наличии
+                <%- declension(ticketsTotals.count, "билет", "билета", "билетов") %>
+                на мероприятия ООО «Н21 Ивентс»,
+                на сумму
+                <%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %>&nbsp;рублей,
+                <%=genderify(customer.gender, 'согласен', 'согласна')%>
+                на замену формата мероприятия для&nbsp;следующих билетов:
+                <ul>
+                <% for (var i = 0; i < tickets.length;  i++ ) { let ticket = tickets[i] %>
+                    <li class="form-check">
+                        <% if(!isSignMode){ %>
+                        <input class="form-check-input ticket-checkbox" type="checkbox" name="ticket[]"
+                               value="<%= ticket.id %>" id="ticket_check_<%=i%>" checked
+                               data-amount="<%= ticket.amount %>"
+                               tabindex="100<%=i%>">
+                        <% } %>
+                        <label class="form-check-label" for="ticket_check_<%=i%>">
+                            билет <%=i+1%> (цена <%= ticket.amount %>; заказ <%= ticket.order_number %> от
+                            <%=formatDate(ticket.order_date) %>),
+                        </label>
+                    </li>
                 <% } %>
+                <% if(!isSignMode){ %>
+                    <label class="bg-danger text-white px-2 message hidden">
+                        Для подписания соглашения вам нужно выбрать хотя&nbsp;бы один билет!
+                    </label>
+                <% } %>
+                </ul>
+                на общую сумму <span class="selected-amount text-nowrap"><%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;рублей.
                 Претензий к ООО «Н21 Ивентс» по поводу замены формата не имею.
             </p>
             <% if(!isSignMode){ %>
-                <p>
-                    <button type="submit" class="btn btn-primary">Подписать</button>
+                <p class="text-center">
+                    <button type="submit" class="btn btn-primary submit" tabindex="200<%=tickets.length+1%>">Подписать</button>
                 </p>
             <% } else { %>
                 <table border="0" width="100%">
@@ -43,8 +59,7 @@
                         <td>
                             <p>Покупатель: <br/><br/>
                                 <u>
-                                <%= customer.surname %>
-                                    <%= ([customer.name[0], (customer.patronimic || '')[0]].filter(Boolean).join('. ')).trim() %>.
+                                    <%= ([customer.surname, customer.name, customer.patronimic].filter(Boolean).join(' ')).trim() %>
                                 </u>
                             </p>
                         </td>
@@ -64,3 +79,82 @@
         </form>
     </div>
 </div>
+<% if(!isSignMode) { %>
+    <script>
+        function ready(fn) {
+            if (document.readyState !== 'loading'){
+                fn();
+            } else if (document.addEventListener) {
+                document.addEventListener('DOMContentLoaded', fn);
+            } else {
+                document.attachEvent('onreadystatechange', function() {
+                    if (document.readyState !== 'loading')
+                        fn();
+                });
+            }
+        }
+
+        function addEventListener(el, eventName, handler) {
+            if (el.addEventListener) {
+                el.addEventListener(eventName, handler);
+            } else {
+                el.attachEvent('on' + eventName, function(){
+                    handler.call(el);
+                });
+            }
+        }
+
+        function addClass(el, className) {
+            if (el.classList) {
+                el.classList.add(className);
+            } else {
+                var current = el.className, found = false;
+                var all = current.split(' ');
+                for(var i=0; i<all.length, !found; i++) found = all[i] === className;
+                if(!found) {
+                    if(current === '') el.className = className;
+                    else el.className += ' ' + className;
+                }
+            }
+        }
+
+        function removeClass(el, className) {
+            if (el.classList)
+                el.classList.remove(className);
+            else
+                el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+        }
+
+        function formatMoney(a, n, x, s, c) {
+            var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\D' : '$') + ')',
+                num = a.toFixed(Math.max(0, ~~n));
+
+            return (c ? num.replace('.', c) : num).replace(new RegExp(re, 'g'), '$&' + (s || ','));
+        }
+
+        function recalc() {
+            var total_amount = 0;
+            var checked_tickets = document.querySelectorAll('.ticket-checkbox:checked');
+            for (var i = 0; i < checked_tickets.length; i++) {
+                total_amount += checked_tickets[i].getAttribute('data-amount') * 1;
+            }
+            document.querySelector('.selected-amount').innerText = formatMoney(total_amount, 0, 3, ' ', ',').trim();
+            if (total_amount > 0) {
+                addClass(document.querySelector('.message'), 'hidden');
+                document.querySelector('.submit').removeAttribute('disabled');
+            } else {
+                removeClass(document.querySelector('.message'), 'hidden');
+                document.querySelector('.submit').setAttribute('disabled', 'disabled');
+            }
+        }
+
+        function init() {
+            var inputs = document.querySelectorAll('.ticket-checkbox');
+            for (var i = 0; i < inputs.length; i++) {
+                addEventListener(inputs[i], 'change', recalc);
+            }
+        }
+
+        ready(init);
+    </script>
+<% } %>

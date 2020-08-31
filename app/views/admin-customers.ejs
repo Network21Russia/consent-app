@@ -2,7 +2,7 @@
     <div class="col">
         <h1><%= title %></h1>
 
-        <form method="get" action="<%= menu[activeMenu].path %>" class="form-inline my-4">
+        <form method="get" action="<%= formAction %>" class="form-inline my-4">
 
             <label class="my-1 mr-2" for="ticketsRest">Билеты</label>
             <select class="custom-select my-1 mr-sm-2" id="ticketsRest" name="ticketsRest">
@@ -26,6 +26,10 @@
                 <option <%=consent === 2 ? 'selected' : ''%> value="2">Подписано</option>
             </select>
 
+            <label class="my-1 mr-2" for="search">Поиск</label>
+            <input type="text" class="form-control my-1 mr-sm-2" id="search" name="search"
+                   placeholder="ФИО, email" value="<%=search%>">
+
             <button type="submit" class="btn btn-primary my-1">Применить</button>
         </form>
 
@@ -35,7 +39,7 @@
                 <tr>
                     <th class="align-middle" scope="col" rowspan="2">Фамилия</th>
                     <th class="align-middle" scope="col" rowspan="2">Имя</th>
-                    <th class="align-middle" scope="col" rowspan="2">Отчество</th>
+                    <!--<th class="align-middle" scope="col" rowspan="2">Отчество</th>-->
                     <th class="align-middle" scope="col" rowspan="2">E-mail</th>
                     <th class="align-middle" scope="col" colspan="2">Билеты</th>
                     <th class="align-middle" scope="col" colspan="2">Письма</th>
@@ -54,13 +58,13 @@
                 <tr>
                     <td class="align-middle"><%= customer.surname %></td>
                     <td class="align-middle"><%= customer.name %></td>
-                    <td class="align-middle"><%= customer.patronimic %></td>
+                    <!--<td class="align-middle"><%= customer.patronimic %></td>-->
                     <td class="align-middle">
                         <a href="/customer/<%= customer.url_hash %>" target="_blank" title="Смотреть страницу принятия соглашения">
                             <%= customer.email %>
                         </a>
                     </td>
-                    <td class="align-middle text-center"><%= customer.tickets %></td>
+                    <td class="align-middle text-center"><%= customer.total_tickets %></td>
                     <td class="align-middle text-center"><%= customer.rest_tickets %></td>
                     <td class="align-middle text-center">
                         <% if(customer.letter_send) { %>
@@ -94,20 +98,7 @@
             </table>
         </div>
 
-        <% if(showPagination) { %>
-            <nav aria-label="Page navigation" class="float-right">
-                <ul class="pagination">
-                    <% for (var i = 0; i < pages; i++)  { %>
-                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                            <a class="page-link"
-                               href="<%= menu[activeMenu].path %><%=filter_query%>&offset=<%= i %>">
-                                <%= i + 1 %>
-                            </a>
-                        </li>
-                    <% } %>
-                </ul>
-            </nav>
-        <% } %>
+        <%-  await include('pagination'); %>
 
     </div>
 </div>

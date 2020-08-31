@@ -17,9 +17,7 @@ module.exports = async (ctx, next) => {
     let query = setEmailOpenQuery();
 
     const db = DatabaseConnection.getInstance(config.db);
-    const result = await db.executeQuery(query, [messageId]);
-
-    console.log(result);
+    await db.executeQuery(query, [messageId]);
 
     ctx.status = 201;
     ctx.body = '';

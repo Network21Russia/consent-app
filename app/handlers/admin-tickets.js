@@ -3,43 +3,46 @@
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
-const {getEmailsQuery, getEmailsCountQuery} = require('../db/queries')
+const {getTicketsQuery, getTicketsTotalsQuery} = require('../db/queries')
 const menu = require('../admin-menu');
 const pagePath = require('../utils/page-path');
 
 module.exports = async (ctx, next) => {
 
-    ctx.state.title = 'Отчет по письмам';
+    ctx.state.title = 'Отчет по билетам';
     ctx.state.menu = menu;
-    ctx.state.activeMenu = 'emails';
+    ctx.state.activeMenu = 'tickets';
 
     const customerId = (ctx.params.id || 0) * 1
     const offset = (ctx.query.offset || 0) * 1;
-    const mailTemplate = (ctx.query.template || 0) * 1;
-    const isOpen = (ctx.query.isOpen || 0) * 1;
+    const hasConsent = (ctx.query.hasConsent || 0) * 1;
+    const search = ctx.query.search || '';
 
     const params = [];
-    const filter = {};
+    const filter = {with_customers: true};
     const filter_query = [];
 
     if (customerId) {
-        filter.id = true;
+        filter.customer = true;
         params.push(customerId)
     }
 
-    if (mailTemplate) {
-        filter_query.push(`template=${mailTemplate}`)
-        filter.template = true;
-        params.push(mailTemplate)
+    if (hasConsent) {
+        filter_query.push(`hasConsent=${hasConsent}`)
+        if (hasConsent === 1) {
+            filter.has_consent = true;
+        } else if (hasConsent === 2) {
+            filter.has_no_consent = true;
+        }
     }
 
-    if (isOpen) {
-        filter_query.push(`isOpen=${isOpen}`)
-        filter.isOpen = true;
-        params.push(isOpen === 1 ? 0 : 1 )
+    if (search) {
+        filter_query.push(`search=${encodeURIComponent(search)}`)
+        filter.with_search = true;
+        params.push(`%${search}%`);
     }
 
-    let query = getEmailsQuery(filter, config.itemsOnPage, offset * config.itemsOnPage);
+    let query = getTicketsQuery(filter, config.itemsOnPage, offset * config.itemsOnPage);
 
     const db = DatabaseConnection.getInstance(config.db);
     const result = await db.executeQuery(query, params);
@@ -48,21 +51,18 @@ module.exports = async (ctx, next) => {
         ctx.throw(500);
     }
 
-    query = getEmailsCountQuery(filter);
+    query = getTicketsTotalsQuery(filter);
     const count = await db.executeQuery(query, params);
     if (!(Array.isArray(count))) {
         ctx.throw(500);
     }
 
-    const template = 'admin-emails';
+    const template = 'admin-tickets';
     const totalCount = count[0].count;
 
-    const emailTemplateNames = {};
-    emailTemplateNames[config.emailTemplateConsentRequest] = 'Запрос соглашения';
-    emailTemplateNames[config.emailTemplateConsentPdf] = 'Отправка PDF';
 
     return ctx.render(template, {
-        emails: result,
+        tickets: result,
         customerId: customerId,
         total: totalCount,
         itemsOnPage: config.itemsOnPage,
@@ -71,11 +71,8 @@ module.exports = async (ctx, next) => {
         currentPage: offset,
         formAction: pagePath(ctx.state.activeMenu, customerId),
         pagePath: pagePath(ctx.state.activeMenu, customerId, filter_query),
-        template: mailTemplate,
-        isOpen: isOpen,
-        emailTemplateConsentRequest: config.emailTemplateConsentRequest,
-        emailTemplateConsentPdf: config.emailTemplateConsentPdf,
-        emailTemplateNames: emailTemplateNames,
+        hasConsent: hasConsent,
+        search: search,
     })
 
 };

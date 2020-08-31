@@ -16,7 +16,7 @@ const months = {
 }
 
 function formatDate(date) {
-    return [date.getDate(), months[date.getMonth()], date.getFullYear(), 'г.'].join(' ');
+    return [date.getDate(), months[date.getMonth()], date.getFullYear()].join(' ');
 }
 
 module.exports = formatDate;

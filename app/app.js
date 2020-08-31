@@ -14,7 +14,9 @@ const shutdown = require('koa-graceful-shutdown');
 
 const config = require('../config/config');
 const declension = require('./utils/declension');
+const genderify = require('./utils/genderify');
 const formatDate = require('./utils/format-date');
+const formatMoney = require('./utils/format-money');
 const router = require('./router');
 
 function start(logger) {
@@ -56,6 +58,7 @@ function start(logger) {
             useShortDoctype: true,
             decodeEntities: true,
             minifyCSS: true,
+            minifyJS: true,
         }))
         .use(cacheControl({
             noCache: true
@@ -66,6 +69,8 @@ function start(logger) {
                 ctx.state.title = 'Network TwentyOne';
                 ctx.state.declension = declension;
                 ctx.state.formatDate = formatDate;
+                ctx.state.formatMoney = formatMoney;
+                ctx.state.genderify = genderify;
                 ctx.state.menu = {};
 
                 await next()

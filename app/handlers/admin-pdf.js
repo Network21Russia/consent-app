@@ -4,7 +4,7 @@ const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
 const renderPdf = require('../utils/render-pdf');
-const {getConsentsQuery} = require('../db/queries');
+const {getConsentsQuery, getCustomerByIdQuery, getTicketsQuery, getTicketsTotalsQuery} = require('../db/queries');
 
 module.exports = async (ctx, next) => {
 
@@ -29,19 +29,47 @@ module.exports = async (ctx, next) => {
 
     const consent = result[0];
 
+    query = getCustomerByIdQuery();
+    const customerResult = await db.executeQuery(query, [consent.customer_id]);
+
+    if (!(Array.isArray(customerResult) && customerResult.length)) {
+        ctx.throw(500);
+    }
+
     const customer = {
         surname: consent.signed_surname,
         name: consent.signed_name,
         patronimic: consent.signed_patronimic,
         email: consent.signed_email,
-        rest_tickets: consent.signed_tickets,
+        gender: customerResult[0].gender,
     }
+
+    const ticketsFilter = {consent: true};
+    const ticketsQueryParams = [consentId]
+
+    query = getTicketsQuery(ticketsFilter, -1, 0);
+    const tickets = await db.executeQuery(query, ticketsQueryParams);
+
+    if (!(Array.isArray(tickets))) {
+        ctx.throw(500);
+    }
+
+    query = getTicketsTotalsQuery(ticketsFilter, -1, 0);
+    const ticketsTotalsRes = await db.executeQuery(query, ticketsQueryParams);
+
+    if (!(Array.isArray(ticketsTotalsRes) && ticketsTotalsRes.length)) {
+        ctx.throw(500);
+    }
+
+    const ticketsTotals = ticketsTotalsRes[0];
 
     const rendered = await ctx.render('consent', {
         customer: customer,
         date: consent.datetime,
         consentSigner: config.consentSigner,
         isSignMode: true,
+        tickets: tickets,
+        ticketsTotals: ticketsTotals,
         layout: 'pdf',
         writeResp: false,
     })

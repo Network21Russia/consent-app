@@ -7,13 +7,17 @@ module.exports = {
         path: config.adminRoutesNamespace,
         name: "Покупатели",
     },
+    tickets: {
+        path: config.adminRoutesNamespace + '/tickets',
+        name: "Билеты",
+    },
     emails: {
         path: config.adminRoutesNamespace + '/emails',
         name: "Письма",
     },
     consents: {
         path: config.adminRoutesNamespace + '/consents',
-        name: "Соглашения",
+        name: "Согласия",
     },
     send: {
         path: config.adminRoutesNamespace + '/send',

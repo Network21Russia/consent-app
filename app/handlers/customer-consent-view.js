@@ -3,7 +3,7 @@
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
-const {getCustomersQuery} = require('../db/queries')
+const {getCustomersQuery, getTicketsQuery, getTicketsTotalsQuery} = require('../db/queries')
 
 module.exports = async (ctx, next) => {
 
@@ -14,7 +14,7 @@ module.exports = async (ctx, next) => {
         ctx.throw(500);
     }
 
-    const query = getCustomersQuery({hash: true, email_template: true});
+    let query = getCustomersQuery({hash: true, email_template: true});
     const db = DatabaseConnection.getInstance(config.db);
     const result = await db.executeQuery(query, [config.emailTemplateConsentRequest, hash]);
 
@@ -24,9 +24,30 @@ module.exports = async (ctx, next) => {
 
     const customer = result[0];
 
+    let tickets = [];
+    let ticketsTotals = {};
+
     let template = 'consent';
     if (customer.rest_tickets <= 0) {
         template = 'no-consent';
+    } else {
+        const ticketsFilter = {customer: true, has_no_consent: true};
+
+        query = getTicketsQuery(ticketsFilter, -1, 0);
+        tickets = await db.executeQuery(query, [customer.id]);
+
+        if (!(Array.isArray(tickets))) {
+            ctx.throw(500);
+        }
+
+        query = getTicketsTotalsQuery(ticketsFilter, -1, 0);
+        const ticketsTotalsRes = await db.executeQuery(query, [customer.id]);
+
+        if (!(Array.isArray(ticketsTotalsRes) && ticketsTotalsRes.length)) {
+            ctx.throw(500);
+        }
+
+        ticketsTotals = ticketsTotalsRes[0];
     }
 
     return ctx.render(template, {
@@ -34,6 +55,8 @@ module.exports = async (ctx, next) => {
         date: new Date(),
         consentSigner: config.consentSigner,
         isSignMode: false,
+        tickets: tickets,
+        ticketsTotals: ticketsTotals,
     })
 
 };

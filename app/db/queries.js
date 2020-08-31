@@ -14,24 +14,27 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
     limit = limit || 10;
     offset = offset || 0;
 
+    let where_conditions = [];
     let where_clause = '';
     let having_conditions = [];
     let having_clause = '';
     let emails_join_condition = '';
 
     if (filter.hash) {
-        where_clause = 'WHERE hash = UNHEX(?)'
+        where_conditions.push('hash = UNHEX(?)')
+    }
+    if (filter.with_search) {
+        where_conditions.push("(customers.surname LIKE ? OR customers.name LIKE ? OR customers.patronimic LIKE ? OR customers.email LIKE ?)")
+    }
+
+    if (where_conditions.length) {
+        where_clause = 'WHERE ' + where_conditions.join(' AND ');
     }
 
     if (filter.email_template) {
         emails_join_condition = 'AND emails.template_id = ? ';
     }
 
-    if (filter.with_rest) {
-        having_conditions.push('rest_tickets > 0')
-    } else if (filter.without_rest) {
-        having_conditions.push('rest_tickets <= 0')
-    }
     if (filter.with_consent) {
         having_conditions.push('has_consents = 1')
     } else if (filter.without_consent) {
@@ -54,34 +57,62 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
 
     const result = [];
 
-    if (count) {
-        result.push('SELECT count(*) AS count FROM (');
-    }
-    result.push('SELECT ');
-    result.push(`
-           customers.id,
-           customers.surname,
-           customers.name,
-           customers.patronimic,
-           customers.email,
-           customers.tickets,
-           HEX(hash)                                                   as url_hash,
-           NOT ISNULL(emails.id)                                       AS letter_send,
-           IF(SUM(IFNULL(emails.is_open, 0)) > 0, 1, 0)                AS letter_opened,
-           NOT ISNULL(consents.id)                                     AS has_consents,
-           customers.tickets - SUM(IFNULL(consents.signed_tickets, 0)) AS rest_tickets
-    `);
-    result.push('FROM customers');
-    result.push(`LEFT JOIN emails ON emails.customer_id = customers.id ${emails_join_condition}`);
-    result.push('LEFT JOIN consents ON consents.customer_id = customers.id');
-    result.push(where_clause);
-    result.push('GROUP BY customers.id');
-    result.push(having_clause);
+    result.push('SELECT');
 
     if (count) {
-            result.push(') t');
+        result.push('count(*) AS count');
     } else {
-        result.push('ORDER BY surname, name, patronimic, id');
+        result.push(`
+            *,
+            total_tickets - consent_tickets               AS rest_tickets,
+            total_tickets_amount - consent_tickets_amount AS rest_tickets_amount
+        `);
+    }
+    result.push(`
+        FROM (
+                 SELECT c.id,
+                        surname,
+                        name,
+                        patronimic,
+                        gender,
+                        email,
+                        url_hash,
+                        letter_send,
+                        letter_opened,
+                        has_consents,
+                        COUNT(tickets.id)                                      AS total_tickets,
+                        SUM(tickets.amount)                                    AS total_tickets_amount,
+                        SUM(NOT ISNULL(tickets.consent_id))                    AS consent_tickets,
+                        SUM(IF(ISNULL(tickets.consent_id), 0, tickets.amount)) AS consent_tickets_amount
+                 FROM (SELECT customers.id,
+                              customers.surname,
+                              customers.name,
+                              customers.patronimic,
+                              customers.gender,
+                              customers.email,
+                              HEX(hash)                                    as url_hash,
+                              NOT ISNULL(emails.id)                        AS letter_send,
+                              IF(SUM(IFNULL(emails.is_open, 0)) > 0, 1, 0) AS letter_opened,
+                              NOT ISNULL(consents.id)                      AS has_consents
+                       FROM customers
+                                LEFT JOIN emails ON emails.customer_id = customers.id ${emails_join_condition}
+                                LEFT JOIN consents ON consents.customer_id = customers.id
+                       ${where_clause}
+                       GROUP BY customers.id
+                       ${having_clause}
+                 ) c
+                 LEFT JOIN tickets ON tickets.customer_id = c.id
+                 GROUP BY c.id
+             ) t
+    `);
+    if (filter.with_rest) {
+        result.push('WHERE rest_tickets > 0')
+    } else if (filter.without_rest) {
+        result.push('WHERE rest_tickets <= 0')
+    }
+
+    if (!count) {
+        result.push('ORDER BY surname, name, patronimic, t.id');
         result.push(`LIMIT ${limit} OFFSET ${offset}`);
     }
 
@@ -105,20 +136,31 @@ function _getConsentsQuery(filter = {}, count = false, limit = 10, offset = 0) {
     let where_clause = '';
 
     if (filter.customer_id) {
-        where_clause = 'WHERE customer_id = ?';
+        where_clause = 'WHERE consents.customer_id = ?';
     } else if (filter.id) {
-        where_clause = 'WHERE id = ?';
+        where_clause = 'WHERE consents.id = ?';
     }
 
-    const result = ['SELECT'];
+    const result = [];
 
+    result.push('SELECT')
     if (count) {
         result.push('count(*) AS count');
     } else {
         result.push('*');
     }
+    result.push('FROM (')
+    result.push('SELECT');
+    result.push(`
+                consents.*,
+                SUM(1)                                                 AS consent_tickets,
+                SUM(IF(ISNULL(tickets.consent_id), 0, tickets.amount)) AS consent_tickets_amount
+    `);
     result.push('FROM consents');
+    result.push(`LEFT JOIN tickets ON tickets.consent_id = consents.id`);
     result.push(where_clause);
+    result.push('GROUP BY consents.id');
+    result.push(') t');
 
     if (!count) {
         result.push('ORDER BY signed_surname, signed_name, signed_patronimic, id');
@@ -133,7 +175,7 @@ function getEmailsQuery(filter = {}, limit = 10, offset = 0) {
 }
 
 function getEmailsCountQuery(filter = {}, limit = 10, offset = 0) {
-    return _getEmailsQuery(filter, false, limit, offset);
+    return _getEmailsQuery(filter, true, limit, offset);
 }
 
 function _getEmailsQuery(filter = {}, count = false, limit = 10, offset = 0) {
@@ -164,7 +206,7 @@ function _getEmailsQuery(filter = {}, count = false, limit = 10, offset = 0) {
     if (count) {
         result.push('count(*) AS count');
     } else {
-        result.push('*');
+        result.push('*, HEX(external_id) as ext_id');
     }
     result.push('FROM emails');
     result.push('LEFT JOIN customers c on c.id = emails.customer_id');
@@ -178,9 +220,85 @@ function _getEmailsQuery(filter = {}, count = false, limit = 10, offset = 0) {
     return result.join(' ');
 }
 
+function getTicketsQuery(filter = {}, limit = 10, offset = 0) {
+    return _getTicketsQuery(filter, false, limit, offset);
+}
+
+function getTicketsTotalsQuery(filter = {}) {
+    return _getTicketsQuery(filter, true);
+}
+
+function _getTicketsQuery(filter = {}, count = false, limit = 10, offset = 0) {
+    filter = filter || {};
+    count = !!count;
+    limit = limit || 10;
+    offset = offset || 0;
+
+    let where_conditions = [];
+    let where_clause = '';
+
+    if (filter.customer) {
+        where_conditions.push('customer_id = ?');
+    }
+
+    if (filter.has_consent) {
+        where_conditions.push("NOT ISNULL(consent_id)");
+    } else if (filter.has_no_consent) {
+        where_conditions.push("ISNULL(consent_id)");
+    }
+
+    if (filter.id) {
+        where_conditions.push("tickets.id IN (?)");
+    }
+
+    if (filter.consent) {
+        where_conditions.push("tickets.consent_id = ?");
+    }
+
+    if (filter.with_search) {
+        where_conditions.push("tickets.order_number LIKE ?");
+    }
+
+    if (where_conditions.length) {
+        where_clause = 'WHERE ' + where_conditions.join(' AND ');
+    }
+
+    const result = [];
+
+    result.push('SELECT')
+    if (count) {
+        result.push('count(*) AS count, sum(amount) AS sum');
+    } else {
+        result.push('*, tickets.id AS ticket_id');
+    }
+    result.push('FROM tickets')
+
+    if (filter.with_customers) {
+        result.push('LEFT JOIN customers c on tickets.customer_id = c.id')
+    }
+
+    result.push(where_clause);
+
+    if (!count) {
+        result.push('ORDER BY');
+        if (filter.with_customers) {
+            result.push('surname, name, patronimic, c.id,')
+        }
+        result.push('order_date, order_number, consent_id');
+        if (limit > -1) {
+            result.push(`LIMIT ${limit} OFFSET ${offset}`);
+        }
+    }
+
+    return result.join(' ');
+}
+
+function getCustomerByIdQuery() {
+    return 'SELECT * FROM customers WHERE id = ?';
+}
 
 function insertConsentQuery() {
-    return 'INSERT INTO `consents`(`customer_id`, `signed_email`, `signed_name`, `signed_surname`, `signed_patronimic`, `signed_tickets`) VALUES (?, ?, ?, ?, ?, ?)'
+    return 'INSERT INTO `consents`(`customer_id`, `signed_email`, `signed_name`, `signed_surname`, `signed_patronimic`) VALUES (?, ?, ?, ?, ?)'
 }
 
 function insertEmailQuery() {
@@ -191,14 +309,22 @@ function setEmailOpenQuery() {
     return "UPDATE `emails` SET `is_open` = 1,`open_datetime` = CURRENT_TIMESTAMP WHERE external_id = UNHEX(REPLACE(?, '-', ''))";
 }
 
+function setTicketsConsentQuery() {
+    return "UPDATE `tickets` SET `consent_id` = ? WHERE id IN (?)";
+}
+
 module.exports = {
+    getCustomerByIdQuery: getCustomerByIdQuery,
     getCustomersQuery: getCustomersQuery,
     getCustomersCountQuery: getCustomersCountQuery,
     getConsentsQuery: getConsentsQuery,
     getConsentsCountQuery: getConsentsCountQuery,
     getEmailsQuery: getEmailsQuery,
     getEmailsCountQuery: getEmailsCountQuery,
+    getTicketsQuery: getTicketsQuery,
+    getTicketsTotalsQuery: getTicketsTotalsQuery,
     insertConsentQuery: insertConsentQuery,
     insertEmailQuery: insertEmailQuery,
     setEmailOpenQuery: setEmailOpenQuery,
+    setTicketsConsentQuery: setTicketsConsentQuery,
 }

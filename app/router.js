@@ -27,6 +27,9 @@ router
     .get('/admin/consents', require('./handlers/admin-consents'))
     .get('/admin/consents/:id', require('./handlers/admin-consents'))
 
+    .get('/admin/tickets', require('./handlers/admin-tickets'))
+    .get('/admin/tickets/:id', require('./handlers/admin-tickets'))
+
     .get('/admin/emails', require('./handlers/admin-emails'))
     .get('/admin/emails/:id', require('./handlers/admin-emails'))
 

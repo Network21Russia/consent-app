@@ -5,6 +5,7 @@ const DatabaseConnection = require('mysql-flexi-promise');
 const config = require('../../config/config');
 const {getCustomersQuery, getCustomersCountQuery} = require('../db/queries')
 const menu = require('../admin-menu');
+const pagePath = require('../utils/page-path');
 
 module.exports = async (ctx, next) => {
 
@@ -16,11 +17,14 @@ module.exports = async (ctx, next) => {
     const ticketsRest = (ctx.query.ticketsRest || 0) * 1;
     const letters = (ctx.query.letters || 0) * 1;
     const consent = (ctx.query.consent || 0) * 1;
+    const search = ctx.query.search || '';
     const filter_query = [];
 
     const filter = {
         email_template: true
     };
+    const params = []
+    params.push(config.emailTemplateConsentRequest);
 
     if (ticketsRest) {
         filter_query.push(`ticketsRest=${ticketsRest}`)
@@ -29,6 +33,12 @@ module.exports = async (ctx, next) => {
         } else if (ticketsRest === 2) {
             filter.without_rest = true;
         }
+    }
+
+    if (search) {
+        filter_query.push(`search=${encodeURIComponent(search)}`)
+        filter.with_search = true;
+        params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
     if (letters) {
@@ -54,20 +64,20 @@ module.exports = async (ctx, next) => {
     let query = getCustomersQuery(filter, config.itemsOnPage, offset * config.itemsOnPage);
 
     const db = DatabaseConnection.getInstance(config.db);
-    const result = await db.executeQuery(query, [config.emailTemplateConsentRequest]);
+    const result = await db.executeQuery(query, params);
 
     if (!(Array.isArray(result))) {
         ctx.throw(500);
     }
 
     query = getCustomersCountQuery(filter)
-    const count = await db.executeQuery(query, [config.emailTemplateConsentRequest]);
+    const count = await db.executeQuery(query, params);
     if (!(Array.isArray(count))) {
         ctx.throw(500);
     }
 
     const template = 'admin-customers';
-    const totalCount = count[0].count
+    const totalCount = count[0].count;
 
     return ctx.render(template, {
         customers: result,
@@ -79,7 +89,9 @@ module.exports = async (ctx, next) => {
         ticketsRest: ticketsRest,
         letters: letters,
         consent: consent,
-        filter_query: '?' + filter_query.join('&')
+        search: search,
+        formAction: pagePath(ctx.state.activeMenu, null),
+        pagePath: pagePath(ctx.state.activeMenu, null, filter_query),
     })
 
 };

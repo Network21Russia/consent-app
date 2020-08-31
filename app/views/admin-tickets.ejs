@@ -1,0 +1,65 @@
+<div class="row">
+    <div class="col">
+        <h1><%= title %></h1>
+
+        <form method="get" action="<%= menu[activeMenu].path %>/<%= customerId ? customerId : '' %>"
+              class="form-inline my-4">
+
+            <label class="my-1 mr-2" for="hasConsent">Согласие</label>
+            <select class="custom-select my-1 mr-sm-2" id="hasConsent" name="hasConsent">
+                <option <%=hasConsent === 0 ? 'selected' : ''%> value="0">...</option>
+                <option <%=hasConsent === 1 ? 'selected' : ''%> value="1">Дано</option>
+                <option <%=hasConsent === 2 ? 'selected' : ''%> value="2">Не дано</option>
+            </select>
+
+            <label class="my-1 mr-2" for="search">Поиск</label>
+            <input type="text" class="form-control my-1 mr-sm-2" id="search" name="search"
+                   placeholder="номер заказа" value="<%=search%>">
+
+            <button type="submit" class="btn btn-primary my-1">Применить</button>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered">
+                <thead class="thead-dark text-center">
+                <tr>
+                    <th class="align-middle" scope="col">Код билета</th>
+                    <th class="align-middle" scope="col">Фамилия</th>
+                    <th class="align-middle" scope="col">Имя</th>
+                    <!--<th class="align-middle" scope="col">Отчество</th>-->
+                    <th class="align-middle" scope="col">E-mail</th>
+                    <th class="align-middle" scope="col">Цена</th>
+                    <th class="align-middle" scope="col">Заказ</th>
+                    <th class="align-middle" scope="col">Дата заказа</th>
+                    <th class="align-middle" scope="col">Включен в согласие</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% tickets.forEach( function(ticket) { %>
+                    <tr>
+                        <td class="align-middle"><%= ticket.ticket_id %></td>
+                        <td class="align-middle"><%= ticket.surname %></td>
+                        <td class="align-middle"><%= ticket.name %></td>
+                        <!--<td class="align-middle"><%= ticket.patronimic %></td>-->
+                        <td class="align-middle"><%= ticket.email %></td>
+                        <td class="align-middle"><%= ticket.amount %></td>
+                        <td class="align-middle text-center">
+                            <%=ticket.order_number%>
+                        <td class="align-middle text-center"><%=formatDate(ticket.order_date) %></td>
+                        <td class="align-middle text-center">
+                            <% if(ticket.consent_id) { %>
+                                да
+                            <% } else { %>
+                                нет
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }); %>
+                </tbody>
+            </table>
+        </div>
+
+        <%-  await include('pagination'); %>
+
+    </div>
+</div>

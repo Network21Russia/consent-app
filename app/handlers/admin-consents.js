@@ -5,10 +5,11 @@ const DatabaseConnection = require('mysql-flexi-promise');
 const config = require('../../config/config');
 const {getConsentsQuery, getConsentsCountQuery} = require('../db/queries')
 const menu = require('../admin-menu');
+const pagePath = require('../utils/page-path');
 
 module.exports = async (ctx, next) => {
 
-    ctx.state.title = 'Отчет по соглашениям';
+    ctx.state.title = 'Отчет по согласиям';
     ctx.state.menu = menu;
     ctx.state.activeMenu = 'consents';
 
@@ -47,7 +48,7 @@ module.exports = async (ctx, next) => {
         showPagination: totalCount > config.itemsOnPage,
         pages: Math.ceil(totalCount / config.itemsOnPage),
         currentPage: offset,
-        filter_query: '?',
+        pagePath: pagePath(ctx.state.activeMenu, null, []),
     })
 
 };
