@@ -6,6 +6,7 @@ const DatabaseConnection = require('mysql-flexi-promise');
 const config = require('../../config/config');
 const {getCustomersQuery, getCustomersCountQuery, insertEmailQuery} = require('../db/queries')
 const menu = require('../admin-menu');
+const {genderify, isMale, isFemale} = require('../utils/genderify');
 
 module.exports = async (ctx, next) => {
 
@@ -58,8 +59,13 @@ module.exports = async (ctx, next) => {
                 To: customer.email,
                 TemplateModel: {
                     name: ([customer.name, customer.patronimic].filter(Boolean).join(' ')).trim(),
+                    gender: customer.gender,
+                    genderMale: isMale(customer.gender),
+                    genderFemale: isFemale(customer.gender),
+                    greeting: genderify(customer.gender, 'Уважаемый', 'Уважаемая'),
                     host: config.publicHost,
                     path: `/customer/${customer.url_hash}`,
+                    url: `https://${config.publicHost}/customer/${customer.url_hash}`,
                 },
             });
         }

@@ -14,4 +14,16 @@ function genderify(gender, male, female) {
     }
 }
 
-module.exports = genderify;
+function isMale(gender) {
+    return gender === GENDER_MALE;
+}
+
+function isFemale(gender) {
+    return gender === GENDER_FEMALE;
+}
+
+module.exports = {
+    genderify,
+    isMale,
+    isFemale
+};

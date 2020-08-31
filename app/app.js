@@ -14,7 +14,7 @@ const shutdown = require('koa-graceful-shutdown');
 
 const config = require('../config/config');
 const declension = require('./utils/declension');
-const genderify = require('./utils/genderify');
+const {genderify} = require('./utils/genderify');
 const formatDate = require('./utils/format-date');
 const formatMoney = require('./utils/format-money');
 const router = require('./router');

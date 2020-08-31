@@ -6,6 +6,7 @@ const DatabaseConnection = require('mysql-flexi-promise');
 const config = require('../../config/config');
 const {getCustomersQuery, getTicketsQuery, getTicketsTotalsQuery, insertConsentQuery, setTicketsConsentQuery, insertEmailQuery} = require('../db/queries')
 const renderPdf = require('../utils/render-pdf');
+const {genderify, isMale, isFemale} = require('../utils/genderify');
 
 module.exports = async (ctx, next) => {
     ctx.state.title = 'Соглашение';
@@ -93,6 +94,10 @@ module.exports = async (ctx, next) => {
             To: customer.email,
             TemplateModel: {
                 name: ([customer.name, customer.patronimic].filter(Boolean).join(' ')).trim(),
+                gender: customer.gender,
+                genderMale: isMale(customer.gender),
+                genderFemale: isFemale(customer.gender),
+                greeting: genderify(customer.gender, 'Уважаемый', 'Уважаемая'),
             },
             Attachments: [
                 {
