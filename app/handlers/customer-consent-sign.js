@@ -17,6 +17,9 @@ module.exports = async (ctx, next) => {
     }
 
     const selected_tickets = (ctx.request.body.ticket || []);
+    const editedSurname = (ctx.request.body.surname || '');
+    const editedName = (ctx.request.body.name || '');
+    const editedPatronimic = (ctx.request.body.patronimic || '');
 
     let query = getCustomersQuery({hash: true, email_template: true});
     const db = DatabaseConnection.getInstance(config.db);
@@ -42,13 +45,23 @@ module.exports = async (ctx, next) => {
             });
         }
 
+        if (editedSurname) {
+            customer.surname = editedSurname;
+        }
+        if (editedName) {
+            customer.name = editedName;
+        }
+        if (editedPatronimic) {
+            customer.patronimic = editedPatronimic;
+        }
+
         const ticketsFilter = {customer: true, has_no_consent: true, id: true};
         const params = [customer.id, selected_tickets]
 
         query = getTicketsQuery(ticketsFilter, -1, 0);
         const tickets = await db.executeQuery(query, params);
 
-        if (!(Array.isArray(tickets))) {
+        if (!(Array.isArray(tickets) && tickets.length)) {
             ctx.throw(500);
         }
 

@@ -16,7 +16,17 @@
                 </tr>
             </table>
 
-            <p>Я, <%= ([customer.surname, customer.name, customer.patronimic].filter(Boolean).join(' ')).trim() %>,
+            <p>Я, <abbr class="customer-static" title="Изменить" tabindex="10"><%=
+                     ([customer.surname, customer.name, customer.patronimic].filter(Boolean).join(' ')).trim()
+                    %>,</abbr>
+                <% if(!isSignMode){ %>
+                    <span class="customer-edit form-inline d-none">
+                        <input type="text" class="form-control form-control-sm my-1 mr-sm-2 " name="surname" disabled
+                               tabindex="11" placeholder="Фамилия" value="<%=customer.surname%>"/>
+                        <input type="text" class="form-control form-control-sm my-1" name="name" disabled
+                               tabindex="12" placeholder="Имя" value="<%=customer.name%>"/>,&nbsp;
+                    </span>
+                <% } %>
                 <%=genderify(customer.gender, 'имеющий', 'имеющая')%>
                 в наличии
                 <%- declension(ticketsTotals.count, "билет", "билета", "билетов") %>
@@ -41,7 +51,7 @@
                     </li>
                 <% } %>
                 <% if(!isSignMode){ %>
-                    <label class="bg-danger text-white px-2 message hidden">
+                    <label class="bg-danger text-white px-2 message d-none">
                         Для подписания согласия вам нужно выбрать хотя&nbsp;бы один билет!
                     </label>
                 <% } %>
@@ -140,12 +150,26 @@
             }
             document.querySelector('.selected-amount').innerText = formatMoney(total_amount, 0, 3, ' ', ',').trim();
             if (total_amount > 0) {
-                addClass(document.querySelector('.message'), 'hidden');
+                addClass(document.querySelector('.message'), 'd-none');
                 document.querySelector('.submit').removeAttribute('disabled');
             } else {
-                removeClass(document.querySelector('.message'), 'hidden');
+                removeClass(document.querySelector('.message'), 'd-none');
                 document.querySelector('.submit').setAttribute('disabled', 'disabled');
             }
+        }
+
+        function initEditor() {
+            var customerStatic = document.querySelector('.customer-static');
+            var customerEdit = document.querySelector('.customer-edit');
+            addEventListener(customerStatic, 'click', function () {
+                addClass(customerStatic, 'd-none');
+                removeClass(customerEdit, 'd-none');
+                addClass(customerEdit, 'd-inline-block');
+                var inputs = customerEdit.querySelectorAll('input');
+                for (var i = 0; i < inputs.length; i++) {
+                    inputs[i].removeAttribute('disabled');
+                }
+            });
         }
 
         function init() {
@@ -153,6 +177,7 @@
             for (var i = 0; i < inputs.length; i++) {
                 addEventListener(inputs[i], 'change', recalc);
             }
+            initEditor();
         }
 
         ready(init);
