@@ -17,6 +17,10 @@
                    placeholder="номер заказа" value="<%=search%>">
 
             <button type="submit" class="btn btn-primary my-1">Применить</button>
+            <% if(hasFilters) { %>
+                &nbsp;
+                <a href="<%= formAction %>" class="btn btn-danger my-1">X</a>
+            <% } %>
         </form>
 
         <div class="table-responsive">
@@ -41,14 +45,22 @@
                         <td class="align-middle"><%= ticket.surname %></td>
                         <td class="align-middle"><%= ticket.name %></td>
                         <!--<td class="align-middle"><%= ticket.patronimic %></td>-->
-                        <td class="align-middle"><%= ticket.email %></td>
+
+                        <td class="align-middle">
+                            <a href="/customer/<%= ticket.url_hash %>" target="_blank" title="Смотреть страницу принятия согласия">
+                                <%= ticket.email %>
+                            </a>
+                        </td>
                         <td class="align-middle"><%= ticket.amount %></td>
                         <td class="align-middle text-center">
                             <%=ticket.order_number%>
                         <td class="align-middle text-center"><%=formatDate(ticket.order_date) %></td>
                         <td class="align-middle text-center">
                             <% if(ticket.consent_id) { %>
-                                да
+                                <a href="/admin/consents/<%= ticket.id %>" target="_blank" title="Смотреть согласие">
+                                    да
+                                </a>
+
                             <% } else { %>
                                 нет
                             <% } %>

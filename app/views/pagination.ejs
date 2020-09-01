@@ -1,6 +1,6 @@
 <% if(showPagination) { %>
     <nav aria-label="Page navigation" class="float-right">
-        <ul class="pagination">
+        <ul class="pagination flex-wrap">
             <% for (var i = 0; i < pages; i++)  { %>
                 <li class="page-item <%= i === currentPage ? 'active' : '' %>">
                     <a class="page-link"

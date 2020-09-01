@@ -39,7 +39,7 @@ module.exports = async (ctx, next) => {
     }
 
     const template = 'admin-consents';
-    const totalCount = count[0].count
+    const totalCount = count[0] ? count[0].count : 0;
 
     return ctx.render(template, {
         consents: result,

@@ -92,6 +92,7 @@ module.exports = async (ctx, next) => {
         search: search,
         formAction: pagePath(ctx.state.activeMenu, null),
         pagePath: pagePath(ctx.state.activeMenu, null, filter_query),
+        hasFilters: filter_query.length > 0,
     })
 
 };

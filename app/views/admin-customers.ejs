@@ -19,7 +19,7 @@
                 <option <%=letters === 3 ? 'selected' : ''%> value="3">Прочитано</option>
             </select>
 
-            <label class="my-1 mr-2" for="consent">Соглашение</label>
+            <label class="my-1 mr-2" for="consent">согласие</label>
             <select class="custom-select my-1 mr-sm-2" id="consent" name="consent">
                 <option <%=consent === 0 ? 'selected' : ''%> value="0">...</option>
                 <option <%=consent === 1 ? 'selected' : ''%> value="1">Не подписано</option>
@@ -31,6 +31,10 @@
                    placeholder="ФИО, email" value="<%=search%>">
 
             <button type="submit" class="btn btn-primary my-1">Применить</button>
+            <% if(hasFilters) { %>
+            &nbsp;
+            <a href="<%= formAction %>" class="btn btn-danger my-1">X</a>
+            <% } %>
         </form>
 
         <div class="table-responsive">
@@ -43,8 +47,8 @@
                     <th class="align-middle" scope="col" rowspan="2">E-mail</th>
                     <th class="align-middle" scope="col" colspan="2">Билеты</th>
                     <th class="align-middle" scope="col" colspan="2">Письма</th>
-                    <th class="align-middle" scope="col" rowspan="2">Соглашение<br/>подписано</th>
-                    <th class="align-middle" scope="col" rowspan="2">Действия</th>
+                    <th class="align-middle" scope="col" rowspan="2">Cогласие</th>
+                    <th class="align-middle" scope="col" rowspan="2">Повтор</th>
                 </tr>
                 <tr>
                     <th class="align-middle" scope="col">всего</th>
@@ -59,12 +63,16 @@
                     <td class="align-middle"><%= customer.surname %></td>
                     <td class="align-middle"><%= customer.name %></td>
                     <!--<td class="align-middle"><%= customer.patronimic %></td>-->
-                    <td class="align-middle">
-                        <a href="/customer/<%= customer.url_hash %>" target="_blank" title="Смотреть страницу принятия соглашения">
+                    <td class="align-middle px-2">
+                        <a href="/customer/<%= customer.url_hash %>" target="_blank" title="Смотреть страницу принятия согласия">
                             <%= customer.email %>
                         </a>
                     </td>
-                    <td class="align-middle text-center"><%= customer.total_tickets %></td>
+                    <td class="align-middle text-center">
+                        <a href="/admin/tickets/<%= customer.id %>" title="Билеты">
+                            <%= customer.total_tickets %>
+                        </a>
+                    </td>
                     <td class="align-middle text-center"><%= customer.rest_tickets %></td>
                     <td class="align-middle text-center">
                         <% if(customer.letter_send) { %>
@@ -77,7 +85,7 @@
                     <td class="align-middle text-center"><%= customer.letter_opened ? 'да' : 'нет' %></td>
                     <td class="align-middle text-center">
                         <% if(customer.has_consents) { %>
-                            <a href="/admin/consents/<%= customer.id %>" title="Соглашения">
+                            <a href="/admin/consents/<%= customer.id %>" title="согласия">
                                 да
                             </a>
                         <% } else { %>

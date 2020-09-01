@@ -23,4 +23,8 @@ module.exports = {
         path: config.adminRoutesNamespace + '/send',
         name: "Запуск рассылки",
     },
+    data: {
+        path: config.adminRoutesNamespace + '/data',
+        name: "Данные",
+    },
 };

@@ -24,7 +24,7 @@ const config = {
 
     dbMigrationsDir: './migrations',
 
-    itemsOnPage: 10,
+    itemsOnPage: 100,
 
     publicHost: getEnvVariable('PUBLIC_HOST', ''),
     officialSite: getEnvVariable('OFFICIAL_SITE', ''),

@@ -9,7 +9,7 @@ const renderPdf = require('../utils/render-pdf');
 const {genderify, isMale, isFemale} = require('../utils/genderify');
 
 module.exports = async (ctx, next) => {
-    ctx.state.title = 'Соглашение';
+    ctx.state.title = 'Согласие';
 
     const hash = ctx.params.hash || '';
     if (!hash) {
@@ -128,13 +128,15 @@ module.exports = async (ctx, next) => {
 
         await db.executeQuery("COMMIT");
 
+        return ctx.render(template, {
+            customer: customer
+        });
+
     } catch (e) {
         ctx.log.error('rolling back transaction');
         await db.executeQuery("ROLLBACK");
         throw e;
     }
 
-    return ctx.render(template, {
-        customer: customer
-    });
+
 };

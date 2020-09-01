@@ -1,0 +1,84 @@
+<div class="row mb-4">
+    <div class="col">
+        <h1><%= title %></h1>
+
+        <% if(resetSuccess === false) { %>
+            <div class="my-4 bg-danger text-white p-2">Сброс данных завершился ошибкой.</div>
+        <% } %>
+        <% if(uploadSuccess === false) { %>
+            <div class="my-4 bg-danger text-white p-2">Загрузка данных завершилась ошибкой.</div>
+        <% } %>
+
+        <% if(resetSuccess === true) { %>
+            <div class="my-4 bg-success text-white p-2">Сброс данных завершен успешно.</div>
+        <% } %>
+        <% if(uploadSuccess === true) { %>
+            <div class="my-4 bg-success text-white p-2">Загрузка данных завершена успешно,
+                обработано <%=parsedRowsCount%> строк.</div>
+        <% } %>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-6">
+
+        <h2>Загрузка данных</h2>
+
+        <form method="post" action="<%= formAction %>" class="my-4" enctype="multipart/form-data">
+
+            <div>Загрузка данных из файла в формате CSV со следующей структурой:</div>
+            <pre class="small">номер_заказа,дата_заказа,кол-во_билетов,цена_билета,имя,фамилия,пол,e-mail</pre>
+            <div>Например:</div>
+            <pre class="small">1100024175,02/29/2020,1,3700,Василий,Пупкин,male,test@test.com</pre>
+            <hr/>
+
+            <div class="form-group">
+                <input type="file" class="form-control-file" name="file" accept="text/csv, .csv">
+            </div>
+
+            <div class="form-group">
+                <label class="pr-2">Разделители:</label>
+                <% allowedDividers.forEach( function(divider, index) { %>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="divider" id="divder<%=index%>" value="<%=divider%>"
+                            <%= index === 0 ? 'checked' : ''%>>
+                    <label class="form-check-label" for="divder<%=index%>"><%=divider%></label>
+                </div>
+                <% }); %>
+            </div>
+
+            <div class="form-group">
+                <label class="pr-2">Кодировка:</label>
+                <% allowedCharsets.forEach( function(charset, index) { %>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="charset" id="charset<%=index%>" value="<%=charset%>"
+                            <%= index === 0 ? 'checked' : ''%>>
+                    <label class="form-check-label" for="charset<%=index%>"><%=charset%></label>
+                </div>
+                <% }); %>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary my-1">Загрузить</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-6">
+        <h2>Сброс данных</h2>
+
+        <form method="post" action="<%= formAction %>" class="my-4" enctype="multipart/form-data">
+
+            <p class="bg-danger text-white p-2">Внимание! Произойдет полный сброс данных в базе!
+                <br/>Не нажимайте, если не уверены в том, что делаете!!!</p>
+
+            <input type="hidden" name="reset" value="1">
+
+            <div>
+                <button type="submit" class="btn btn-danger my-1"
+                        onclick="return confirm('Вы точно хотите это сделать?');">Сбросить</button>
+            </div>
+        </form>
+
+    </div>
+</div>

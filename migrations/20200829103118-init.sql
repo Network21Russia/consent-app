@@ -2,9 +2,9 @@ CREATE TABLE IF NOT EXISTS customers
 (
     id         INT(11)               NOT NULL AUTO_INCREMENT COMMENT 'id покупателя',
     email      VARCHAR(320)          NOT NULL COMMENT 'e-mail',
-    name       VARCHAR(20)           NOT NULL COMMENT 'имя',
-    surname    VARCHAR(20)           NOT NULL COMMENT 'фамилия',
-    patronimic VARCHAR(20)           NULL DEFAULT NULL COMMENT 'отчество',
+    name       VARCHAR(50)           NOT NULL COMMENT 'имя',
+    surname    VARCHAR(50)           NOT NULL COMMENT 'фамилия',
+    patronimic VARCHAR(50)           NULL DEFAULT NULL COMMENT 'отчество',
     gender     ENUM('male','female') NOT NULL COMMENT 'пол',
     hash       BINARY(16)            NOT NULL COMMENT 'хеш для url',
     PRIMARY KEY (id),

@@ -58,7 +58,7 @@ module.exports = async (ctx, next) => {
     const totalCount = count[0].count;
 
     const emailTemplateNames = {};
-    emailTemplateNames[config.emailTemplateConsentRequest] = 'Запрос соглашения';
+    emailTemplateNames[config.emailTemplateConsentRequest] = 'Запрос согласия';
     emailTemplateNames[config.emailTemplateConsentPdf] = 'Отправка PDF';
 
     return ctx.render(template, {
@@ -76,6 +76,7 @@ module.exports = async (ctx, next) => {
         emailTemplateConsentRequest: config.emailTemplateConsentRequest,
         emailTemplateConsentPdf: config.emailTemplateConsentPdf,
         emailTemplateNames: emailTemplateNames,
+        hasFilters: filter_query.length > 0,
     })
 
 };

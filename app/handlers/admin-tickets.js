@@ -73,6 +73,7 @@ module.exports = async (ctx, next) => {
         pagePath: pagePath(ctx.state.activeMenu, customerId, filter_query),
         hasConsent: hasConsent,
         search: search,
+        hasFilters: filter_query.length > 0,
     })
 
 };

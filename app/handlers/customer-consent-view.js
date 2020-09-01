@@ -7,7 +7,7 @@ const {getCustomersQuery, getTicketsQuery, getTicketsTotalsQuery} = require('../
 
 module.exports = async (ctx, next) => {
 
-    ctx.state.title = 'Соглашение';
+    ctx.state.title = 'Согласие';
 
     const hash = ctx.params.hash || '';
     if (!hash) {

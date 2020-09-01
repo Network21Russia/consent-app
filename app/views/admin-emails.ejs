@@ -26,6 +26,10 @@
             </select>
 
             <button type="submit" class="btn btn-primary my-1">Применить</button>
+            <% if(hasFilters) { %>
+                &nbsp;
+                <a href="<%= formAction %>" class="btn btn-danger my-1">X</a>
+            <% } %>
         </form>
 
         <div class="table-responsive">

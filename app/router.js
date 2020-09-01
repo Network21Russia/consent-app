@@ -30,6 +30,9 @@ router
     .get('/admin/tickets', require('./handlers/admin-tickets'))
     .get('/admin/tickets/:id', require('./handlers/admin-tickets'))
 
+    .get('/admin/data', require('./handlers/admin-data'))
+    .post('/admin/data', KoaBody({multipart: true}), require('./handlers/admin-data'))
+
     .get('/admin/emails', require('./handlers/admin-emails'))
     .get('/admin/emails/:id', require('./handlers/admin-emails'))
 

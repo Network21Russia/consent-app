@@ -81,13 +81,14 @@ module.exports = async (ctx, next) => {
             await db.executeQuery(query, [r.MessageID, emailToCustomerId[r.To], config.emailTemplateConsentRequest]);
         }
 
-        query = getCustomersCountQuery(filter)
+        query = getCustomersCountQuery(filter);
+
         const count = await db.executeQuery(query, params);
         if (!(Array.isArray(count))) {
             ctx.throw(500);
         }
 
-        totalCount = total ? total : count[0].count;
+        totalCount = total ? total : (count[0] ? count[0].count : 0);
 
         filter_query.push('started=' + started);
         filter_query.push('total=' + totalCount);

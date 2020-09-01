@@ -60,7 +60,7 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
     result.push('SELECT');
 
     if (count) {
-        result.push('count(*) AS count');
+        result.push('count(*) AS count, total_tickets - consent_tickets AS rest_tickets');
     } else {
         result.push(`
             *,
@@ -106,9 +106,9 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
              ) t
     `);
     if (filter.with_rest) {
-        result.push('WHERE rest_tickets > 0')
+        result.push('HAVING rest_tickets > 0')
     } else if (filter.without_rest) {
-        result.push('WHERE rest_tickets <= 0')
+        result.push('HAVING rest_tickets <= 0')
     }
 
     if (!count) {
@@ -270,6 +270,9 @@ function _getTicketsQuery(filter = {}, count = false, limit = 10, offset = 0) {
         result.push('count(*) AS count, sum(amount) AS sum');
     } else {
         result.push('*, tickets.id AS ticket_id');
+        if (filter.with_customers) {
+            result.push(', HEX(c.hash) as url_hash')
+        }
     }
     result.push('FROM tickets')
 
@@ -297,6 +300,18 @@ function getCustomerByIdQuery() {
     return 'SELECT * FROM customers WHERE id = ?';
 }
 
+function getCustomerByEmailQuery() {
+    return 'SELECT * FROM customers WHERE email = ?';
+}
+
+function insertCustomerQuery() {
+    return 'INSERT INTO `customers`(`email`, `name`, `surname`, `patronimic`, `gender`) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `name` = ?, `surname` = ?, `patronimic` = ?, `gender` = ?;'
+}
+
+function insertTicketQuery() {
+    return 'INSERT INTO `tickets`(`customer_id`, `order_number`, `order_date`, `amount`) VALUES (?, ?, ?, ?)';
+}
+
 function insertConsentQuery() {
     return 'INSERT INTO `consents`(`customer_id`, `signed_email`, `signed_name`, `signed_surname`, `signed_patronimic`) VALUES (?, ?, ?, ?, ?)'
 }
@@ -315,6 +330,7 @@ function setTicketsConsentQuery() {
 
 module.exports = {
     getCustomerByIdQuery: getCustomerByIdQuery,
+    getCustomerByEmailQuery: getCustomerByEmailQuery,
     getCustomersQuery: getCustomersQuery,
     getCustomersCountQuery: getCustomersCountQuery,
     getConsentsQuery: getConsentsQuery,
@@ -323,6 +339,8 @@ module.exports = {
     getEmailsCountQuery: getEmailsCountQuery,
     getTicketsQuery: getTicketsQuery,
     getTicketsTotalsQuery: getTicketsTotalsQuery,
+    insertCustomerQuery: insertCustomerQuery,
+    insertTicketQuery: insertTicketQuery,
     insertConsentQuery: insertConsentQuery,
     insertEmailQuery: insertEmailQuery,
     setEmailOpenQuery: setEmailOpenQuery,
