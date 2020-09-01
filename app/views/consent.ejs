@@ -43,11 +43,18 @@
                                value="<%= ticket.id %>" id="ticket_check_<%=i%>" checked
                                data-amount="<%= ticket.amount %>"
                                tabindex="100<%=i%>">
-                        <% } %>
                         <label class="form-check-label" for="ticket_check_<%=i%>">
                             билет <%=i+1%> (цена <%= ticket.amount %>; заказ <%= ticket.order_number %> от
                             <%=formatDate(ticket.order_date) %>),
                         </label>
+                        <% } else { %>
+                            <label class="form-check-label">
+                                заказ <%= ticket.order_number %> от
+                                <%=formatDate(ticket.order_date) %> &mdash;
+                                <%- declension(ticket.count, "билет", "билета", "билетов") %>
+                                на сумму <%= ticket.amount %>,
+                            </label>
+                        <% } %>
                     </li>
                 <% } %>
                 <% if(!isSignMode){ %>

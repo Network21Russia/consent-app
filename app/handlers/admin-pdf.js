@@ -4,6 +4,7 @@ const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
 const renderPdf = require('../utils/render-pdf');
+const composeTickets = require('../utils/compose-tickets');
 const {getConsentsQuery, getCustomerByIdQuery, getTicketsQuery, getTicketsTotalsQuery} = require('../db/queries');
 
 module.exports = async (ctx, next) => {
@@ -68,7 +69,7 @@ module.exports = async (ctx, next) => {
         date: consent.datetime,
         consentSigner: config.consentSigner,
         isSignMode: true,
-        tickets: tickets,
+        tickets: composeTickets(tickets),
         ticketsTotals: ticketsTotals,
         layout: 'pdf',
         writeResp: false,
