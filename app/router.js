@@ -19,6 +19,7 @@ router
 
     .get('/customer/:hash', require('./handlers/customer-consent-view'))
     .post('/customer/:hash', KoaBody(), require('./handlers/customer-consent-sign'))
+    .get('/customer/:hash/success', require('./handlers/customer-consent-success'))
 
     .post('/webhook/open', KoaBody(), require('./handlers/email-open-webhook'))
 

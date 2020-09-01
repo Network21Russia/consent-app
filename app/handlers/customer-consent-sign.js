@@ -36,7 +36,6 @@ module.exports = async (ctx, next) => {
 
         const customer = result[0];
 
-        let template = 'consent-signed';
         if (customer.rest_tickets <= 0) {
             template = 'no-consent';
 
@@ -141,9 +140,7 @@ module.exports = async (ctx, next) => {
 
         await db.executeQuery("COMMIT");
 
-        return ctx.render(template, {
-            customer: customer
-        });
+        ctx.redirect(`/customer/${hash}/success`);
 
     } catch (e) {
         ctx.log.error('rolling back transaction');
