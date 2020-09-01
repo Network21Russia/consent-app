@@ -330,13 +330,30 @@
         [hidden] {
             display: none !important;
         }
-        html, body {width:16cm; max-width: 16cm}
-        .text-right {text-align: right}
-        .text-center {text-align: center}
+
+        html {
+            zoom: 1;
+        }
+
+        body {
+            height: 100vh;
+        }
+
+        html, body {
+            width: 16cm;
+            max-width: 16cm
+        }
+
+        .text-right {
+            text-align: right
+        }
+
+        .text-center {
+            text-align: center
+        }
     </style>
 </head>
 <body>
-    Тест
     <%- body %>
 </body>
 </html>

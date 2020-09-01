@@ -7,6 +7,10 @@ async function renderPdf(html) {
         format: 'A4',
         orientation: "portrait",
         border: '2cm',
+        type: "pdf",
+        dpi: 200,
+        quality: 80,
+        zoomFactor: "1",
     };
     return new Promise((resolve, reject) => {
         pdf.create(html, pdfOptions).toBuffer(async function (err, buffer) {
