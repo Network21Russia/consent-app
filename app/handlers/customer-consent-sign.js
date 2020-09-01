@@ -112,7 +112,7 @@ module.exports = async (ctx, next) => {
         sendingControlOptions.To = config.emailAdminEmail;
         sendingControlOptions.TemplateModel.isAdminCopy = true;
 
-        const client = new postmark.ServerClient(config.emailpostmarkToken);
+        const client = new postmark.ServerClient(config.emailPostmarkToken);
         const sendingResult = await client.sendEmailBatchWithTemplates([sendingOptions, sendingControlOptions]);
 
         for (const r of sendingResult) {

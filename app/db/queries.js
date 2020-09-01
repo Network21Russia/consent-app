@@ -305,11 +305,11 @@ function getCustomerByEmailQuery() {
 }
 
 function insertCustomerQuery() {
-    return 'INSERT INTO `customers`(`email`, `name`, `surname`, `patronimic`, `gender`) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `name` = ?, `surname` = ?, `patronimic` = ?, `gender` = ?;'
+    return 'INSERT INTO `customers`(`email`, `name`, `surname`, `patronimic`, `gender`)  VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `name` = ?, `surname` = ?, `patronimic` = ?, `gender` = ?;'
 }
 
-function insertTicketQuery() {
-    return 'INSERT INTO `tickets`(`customer_id`, `order_number`, `order_date`, `amount`) VALUES (?, ?, ?, ?)';
+function insertTicketsQuery() {
+    return 'INSERT INTO `tickets`(`customer_id`, `order_number`, `order_date`, `amount`) VALUES ?';
 }
 
 function insertConsentQuery() {
@@ -340,7 +340,7 @@ module.exports = {
     getTicketsQuery: getTicketsQuery,
     getTicketsTotalsQuery: getTicketsTotalsQuery,
     insertCustomerQuery: insertCustomerQuery,
-    insertTicketQuery: insertTicketQuery,
+    insertTicketsQuery: insertTicketsQuery,
     insertConsentQuery: insertConsentQuery,
     insertEmailQuery: insertEmailQuery,
     setEmailOpenQuery: setEmailOpenQuery,

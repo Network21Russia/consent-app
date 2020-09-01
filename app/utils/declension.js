@@ -6,7 +6,7 @@
 // @example declension(-1.5, "файл", "файла", "файлов") // 1,5 файла
 function declension(count, oneNominative, severalNominative, severalGenitive, options = {}) {
     options = options || {};
-    const params = Object.assign({}, {printCount: true, divider: '&nbsp;'}, options);
+    const params = Object.assign({}, {printCount: true, delimiter: '&nbsp;'}, options);
     const result = [];
     if (params.printCount) {
         result.push(count);
@@ -17,25 +17,25 @@ function declension(count, oneNominative, severalNominative, severalGenitive, op
     }
     if (!(Number.isFinite(count) && !(count % 1))) {
         result.push(severalNominative);
-        return result.join(params.divider);
+        return result.join(params.delimiter);
     }
     count = Math.abs(count);
     count %= 100;
     if (count >= 5 && count <= 20) {
         result.push(severalGenitive);
-        return result.join(params.divider);
+        return result.join(params.delimiter);
     }
     count %= 10;
     if (count === 1) {
         result.push(oneNominative);
-        return result.join(params.divider);
+        return result.join(params.delimiter);
     }
     if (count >= 2 && count <= 4) {
         result.push(severalNominative);
-        return result.join(params.divider);
+        return result.join(params.delimiter);
     }
     result.push(severalGenitive);
-    return result.join(params.divider);
+    return result.join(params.delimiter);
 }
 
 module.exports = declension;

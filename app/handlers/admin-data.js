@@ -7,12 +7,16 @@ const iconv = require('iconv-lite');
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
-const {insertCustomerQuery, getCustomerByEmailQuery, insertTicketQuery} = require('../db/queries')
+const {insertCustomerQuery, getCustomerByEmailQuery, insertTicketsQuery} = require('../db/queries')
 const menu = require('../admin-menu');
 const pagePath = require('../utils/page-path');
 
-const allowedDividers = [',', ';'];
+const allowedDelimiters = [',', ';'];
 const allowedCharsets = ['win1251', 'utf8'];
+const delimetersNames = {
+    ',': 'запятая',
+    ';': 'точка с запятой',
+}
 
 module.exports = async (ctx, next) => {
 
@@ -66,23 +70,20 @@ module.exports = async (ctx, next) => {
 
                 uploadSuccess = false;
 
-                let divider = ctx.request.body.divider || allowedDividers[0];
-                if (allowedDividers.indexOf(divider) < 0) {
-                    divider = allowedDividers[0]
+                let delimiter = ctx.request.body.delimiter || allowedDelimiters[0];
+                if (allowedDelimiters.indexOf(delimiter) < 0) {
+                    delimiter = allowedDelimiters[0]
                 }
 
-                let charset = ctx.request.body.divider || allowedCharsets[0];
+                let charset = ctx.request.body.delimiter || allowedCharsets[0];
                 if (allowedCharsets.indexOf(charset) < 0) {
                     charset = allowedCharsets[0]
                 }
 
                 const parserOptions = {
-                    delimiter: divider
+                    delimiter: delimiter
                 }
 
-                const upsertCustomerQuery = insertCustomerQuery();
-                const getCustomerQuery = getCustomerByEmailQuery();
-                const ticketQuery = insertTicketQuery();
                 const rows = [];
 
                 await new Promise((resolve, reject) => {
@@ -118,23 +119,32 @@ module.exports = async (ctx, next) => {
                             row[6],
                         ]
 
-                        await db.executeQuery(upsertCustomerQuery, params);
+                        const upsertResult = await db.executeQuery(insertCustomerQuery(), params);
 
-                        const result = await db.executeQuery(getCustomerQuery, [row[7]]);
+                        let customerId = upsertResult.insertId || 0;
 
-                        if (Array.isArray(result) && result.length) {
-                            const customer = result[0];
+                        if (!customerId) {
+                            const result = await db.executeQuery(getCustomerByEmailQuery(), [row[7]]);
+                            if (Array.isArray(result) && result.length) {
+                                customerId = result[0].id
+                            }
+                        }
+
+                        if (customerId) {
 
                             const ticketsCount = row[2] * 1;
                             const amount = row[3] * 1;
                             const order_number = row[0] * 1;
                             const date = new Date(row[1]);
 
-                            const params = [customer.id, order_number, date, amount]
+                            const ticketParams = [customerId, order_number, date, amount]
+                            const params = []
 
                             for (let i = 0; i < ticketsCount; i++) {
-                                await db.executeQuery(ticketQuery, params);
+                                params.push(ticketParams)
                             }
+
+                            await db.executeQuery(insertTicketsQuery(), [params]);
                         }
                     } catch (e) {
                         throw e;
@@ -155,8 +165,9 @@ module.exports = async (ctx, next) => {
 
     return ctx.render(template, {
         finished: false,
-        allowedDividers: allowedDividers,
+        allowedDelimiters: allowedDelimiters,
         allowedCharsets: allowedCharsets,
+        delimetersNames: delimetersNames,
         parsedRowsCount: parsedRowsCount,
         resetSuccess: resetSuccess,
         uploadSuccess: uploadSuccess,

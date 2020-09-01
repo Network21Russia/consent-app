@@ -70,7 +70,7 @@ module.exports = async (ctx, next) => {
             });
         }
 
-        const client = new postmark.ServerClient(config.emailpostmarkToken);
+        const client = new postmark.ServerClient(config.emailPostmarkToken);
         const sendingResult = await client.sendEmailBatchWithTemplates(batch);
 
         for (const r of sendingResult) {

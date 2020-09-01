@@ -13,7 +13,7 @@ const config = {
 
     db: {
         name: "main",
-        connectionLimit: 10,
+        connectionLimit: +getEnvVariable('DB_CONNECTIONS_LIMIT', 10),
         user: mysqlDsnParts.user,
         password: mysqlDsnParts.password,
         database: mysqlDsnParts.database,
@@ -33,7 +33,7 @@ const config = {
     adminLogin: getEnvVariable('ADMIN_LOGIN', ''),
     adminPassword: getEnvVariable('ADMIN_PASSWORD', ''),
 
-    emailpostmarkToken: getEnvVariable('EMAIL_POSTMARK_TOKEN', ''),
+    emailPostmarkToken: getEnvVariable('EMAIL_POSTMARK_TOKEN', ''),
     emailSenderFrom: getEnvVariable('EMAIL_SENDER_FROM', ''),
     emailAdminEmail: getEnvVariable('EMAIL_ADMIN_EMAIL', ''),
     emailTemplateConsentRequest: +getEnvVariable('EMAIL_TEMPLATE_CONSENT_REQUEST', ''),
