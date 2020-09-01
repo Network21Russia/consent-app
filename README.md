@@ -32,6 +32,7 @@
 | EMAIL_TEMPLATE_CONSENT_PDF     | Template id in Postmark for letter with consent confirm |
 | CONSENT_SIGNER                 | Name of person signing consent from headquarters |
 | EMAIL_ADMIN_EMAIL              | Email to send copies of signed consents for headquoters |
+| HASH_SECRET                    | Secret to make url hash |
 
 ## Develoment and support
 

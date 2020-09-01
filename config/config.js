@@ -26,6 +26,8 @@ const config = {
 
     itemsOnPage: 100,
 
+    hashSecret: getEnvVariable('HASH_SECRET', ''),
+
     publicHost: getEnvVariable('PUBLIC_HOST', ''),
     officialSite: getEnvVariable('OFFICIAL_SITE', ''),
 

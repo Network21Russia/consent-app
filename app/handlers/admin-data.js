@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const csv = require('fast-csv');
+const crypto = require('crypto');
 const iconv = require('iconv-lite');
 const DatabaseConnection = require('mysql-flexi-promise');
 
@@ -107,12 +108,16 @@ module.exports = async (ctx, next) => {
 
                 for (let row of rows) {
                     try {
+
+                        const email = row[7];
+                        const hash = crypto.createHash('md5').update(email + config.hashSecret).digest("hex");
                         const params = [
                             row[7],
                             row[4],
                             row[5],
                             null,
                             row[6],
+                            hash,
                             row[4],
                             row[5],
                             null,

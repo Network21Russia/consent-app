@@ -13,26 +13,6 @@ CREATE TABLE IF NOT EXISTS customers
   CHARSET = utf8
   COLLATE utf8_general_ci COMMENT = 'Покупатели';
 
-DROP TRIGGER IF EXISTS customers_insert;
-
-CREATE TRIGGER customers_insert
-    BEFORE INSERT
-    ON customers
-    FOR EACH ROW
-BEGIN
-    SET NEW.hash = UNHEX(MD5(AES_ENCRYPT(NEW.email, UNHEX(SHA2(NEW.email, 512)))));
-END;
-
-DROP TRIGGER IF EXISTS customers_update;
-
-CREATE TRIGGER customers_update
-    BEFORE UPDATE
-    ON customers
-    FOR EACH ROW
-BEGIN
-    SET NEW.hash = UNHEX(MD5(AES_ENCRYPT(NEW.email, UNHEX(SHA2(NEW.email, 512)))));
-END;
-
 CREATE TABLE IF NOT EXISTS emails
 (
     id            INT(11)    NOT NULL AUTO_INCREMENT COMMENT 'внутренний id письма',

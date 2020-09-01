@@ -305,7 +305,8 @@ function getCustomerByEmailQuery() {
 }
 
 function insertCustomerQuery() {
-    return 'INSERT INTO `customers`(`email`, `name`, `surname`, `patronimic`, `gender`)  VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `name` = ?, `surname` = ?, `patronimic` = ?, `gender` = ?;'
+    return 'INSERT INTO `customers`(`email`, `name`, `surname`, `patronimic`, `gender`, `hash`) VALUES (?, ?, ?, ?, ?, UNHEX(?))' +
+        ' ON DUPLICATE KEY UPDATE `name` = ?, `surname` = ?, `patronimic` = ?, `gender` = ?;'
 }
 
 function insertTicketsQuery() {
