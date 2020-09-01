@@ -52,7 +52,8 @@
                                 заказ <%= ticket.order_number %> от
                                 <%=formatDate(ticket.order_date) %> &mdash;
                                 <%- declension(ticket.count, "билет", "билета", "билетов") %>
-                                на сумму <%= ticket.amount %>,
+                                на сумму
+                                <%- formatMoney(ticket.amount, 0, 3, '&nbsp;', ',').trim() %>&nbsp;рублей,
                             </label>
                         <% } %>
                     </li>
