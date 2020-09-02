@@ -24,17 +24,17 @@
                         <input type="text" class="form-control form-control-sm my-1 mr-sm-2 " name="surname" disabled
                                tabindex="11" placeholder="Фамилия" value="<%=customer.surname%>"/>
                         <input type="text" class="form-control form-control-sm my-1" name="name" disabled
-                               tabindex="12" placeholder="Имя" value="<%=customer.name%>"/>,&nbsp;
+                               tabindex="12" placeholder="Имя" value="<%=customer.name%>"/>,
                     </span>
                 <% } %>
                 <%=genderify(customer.gender, 'имеющий', 'имеющая')%>
                 в наличии
                 <%- declension(ticketsTotals.count, "билет", "билета", "билетов") %>
-                на мероприятия ООО «Н21 Ивентс»,
-                на сумму
+                на&nbsp;мероприятия ООО «Н21&nbsp;Ивентс»,
+                на&nbsp;сумму
                 <%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %>&nbsp;рублей,
                 <%=genderify(customer.gender, 'согласен', 'согласна')%>
-                на замену формата мероприятия для&nbsp;следующих билетов:</p>
+                на&nbsp;замену формата мероприятия для&nbsp;следующих билетов:</p>
             <ul>
             <% for (var i = 0; i < tickets.length;  i++ ) { let ticket = tickets[i] %>
                 <li class="form-check">
@@ -64,8 +64,8 @@
                 </label>
             <% } %>
             </ul>
-            <p>на общую сумму <span class="selected-amount text-nowrap"><%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;рублей.
-                Претензий к&nbsp;ООО «Н21 Ивентс» по поводу замены формата не имею.
+            <p>на&nbsp;общую сумму <span class="selected-amount text-nowrap"><%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;рублей.
+                Претензий к&nbsp;ООО «Н21&nbsp;Ивентс» по поводу замены формата не&nbsp;имею.
             </p>
             <% if(!isSignMode){ %>
                 <p class="text-center">
