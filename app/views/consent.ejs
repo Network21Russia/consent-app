@@ -44,7 +44,7 @@
                            data-amount="<%= ticket.amount %>"
                            tabindex="100<%=i%>">
                     <label class="form-check-label" for="ticket_check_<%=i%>">
-                        билет <%=i+1%> (цена <%= ticket.amount %>; заказ <%= ticket.order_number %> от
+                        билет <%=i+1%> (цена <%= ticket.amount %> руб.; заказ <%= ticket.order_number %> от
                         <%=formatDate(ticket.order_date) %>),
                     </label>
                     <% } else { %>
