@@ -57,6 +57,7 @@ function start(logger) {
             preserveLineBreaks: false,
             useShortDoctype: true,
             decodeEntities: true,
+            removeComments: true,
             minifyCSS: true,
             minifyJS: true,
         }))

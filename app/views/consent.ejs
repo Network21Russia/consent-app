@@ -99,57 +99,6 @@
 </div>
 <% if(!isSignMode) { %>
     <script>
-        function ready(fn) {
-            if (document.readyState !== 'loading'){
-                fn();
-            } else if (document.addEventListener) {
-                document.addEventListener('DOMContentLoaded', fn);
-            } else {
-                document.attachEvent('onreadystatechange', function() {
-                    if (document.readyState !== 'loading')
-                        fn();
-                });
-            }
-        }
-
-        function addEventListener(el, eventName, handler) {
-            if (el.addEventListener) {
-                el.addEventListener(eventName, handler);
-            } else {
-                el.attachEvent('on' + eventName, function(){
-                    handler.call(el);
-                });
-            }
-        }
-
-        function addClass(el, className) {
-            if (el.classList) {
-                el.classList.add(className);
-            } else {
-                var current = el.className, found = false;
-                var all = current.split(' ');
-                for(var i=0; i<all.length, !found; i++) found = all[i] === className;
-                if(!found) {
-                    if(current === '') el.className = className;
-                    else el.className += ' ' + className;
-                }
-            }
-        }
-
-        function removeClass(el, className) {
-            if (el.classList)
-                el.classList.remove(className);
-            else
-                el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
-        }
-
-        function formatMoney(a, n, x, s, c) {
-            var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\D' : '$') + ')',
-                num = a.toFixed(Math.max(0, ~~n));
-
-            return (c ? num.replace('.', c) : num).replace(new RegExp(re, 'g'), '$&' + (s || ','));
-        }
-
         function recalc() {
             var total_amount = 0;
             var checked_tickets = document.querySelectorAll('.ticket-checkbox:checked');
