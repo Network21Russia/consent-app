@@ -15,8 +15,19 @@ const months = {
     11: 'декабря',
 }
 
-function formatDate(date) {
-    return [date.getDate(), months[date.getMonth()], date.getFullYear()].join(' ');
+function fixTz(date) {
+    const _date = new Date(date);
+    _date.setMinutes(_date.getMinutes() + (_date.getTimezoneOffset() * -1));
+    return _date
 }
 
-module.exports = formatDate;
+function formatDate(date) {
+    const _date = fixTz(date);
+    return [_date.getDate(), months[_date.getMonth()], _date.getFullYear()].join(' ');
+}
+
+function formatDateTime(date) {
+    return fixTz(date).toISOString().replace('T', ' ').split('.')[0];
+}
+
+module.exports = {formatDate, formatDateTime};

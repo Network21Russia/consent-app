@@ -56,10 +56,10 @@
                         <td class="align-middle"><%= email.email %></td>
                         <td class="align-middle text-center">
                             <%=emailTemplateNames[email.template_id]%>
-                        <td class="align-middle text-center"><%=formatDate(email.datetime) %></td>
+                        <td class="align-middle text-center"><%=formatDateTime(email.datetime) %></td>
                         <td class="align-middle text-center">
                             <% if(email.is_open) { %>
-                                <%= formatDate(email.open_datetime)%>
+                                <%= formatDateTime(email.open_datetime)%>
                             <% } else { %>
                                 нет
                             <% } %>

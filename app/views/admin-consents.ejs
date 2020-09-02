@@ -25,7 +25,7 @@
                         <td class="align-middle"><%= consent.signed_name %></td>
                         <!--<td class="align-middle"><%= consent.signed_patronimic %></td>-->
                         <td class="align-middle"><%= consent.signed_email %></td>
-                        <td class="align-middle text-center"><%= formatDate(consent.datetime) %></td>
+                        <td class="align-middle text-center"><%= formatDateTime(consent.datetime) %></td>
                         <td class="align-middle text-center"><%= consent.consent_tickets %></td>
                         <td class="align-middle text-center"><%- formatMoney(consent.consent_tickets_amount, 0, 3, '&nbsp;', ',').trim() %></td>
                         <td class="align-middle text-center text-nowrap">
