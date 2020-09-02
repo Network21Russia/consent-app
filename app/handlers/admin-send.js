@@ -96,7 +96,7 @@ module.exports = async (ctx, next) => {
 
         const totalPages = Math.ceil(totalCount / itemsOnPage);
 
-        finished = totalPages <= offset;
+        finished = hash ? true : totalPages <= offset;
     }
 
     const template = 'admin-send';
