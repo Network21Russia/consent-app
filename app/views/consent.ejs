@@ -21,10 +21,10 @@
                     %>,</abbr>
                 <% if(!isSignMode){ %>
                     <span class="customer-edit form-inline d-none">
-                        <input type="text" class="form-control form-control-sm my-1 mr-sm-2 " name="surname" disabled
-                               tabindex="11" placeholder="Фамилия" value="<%=customer.surname%>"/>
+                        <input type="text" class="form-control form-control-sm my-1 " name="surname" disabled
+                               tabindex="11" placeholder="Фамилия" value="<%=customer.surname%>"/>&nbsp;
                         <input type="text" class="form-control form-control-sm my-1" name="name" disabled
-                               tabindex="12" placeholder="Имя" value="<%=customer.name%>"/>,
+                               tabindex="12" placeholder="Имя" value="<%=customer.name%>"/>,&nbsp;
                     </span>
                 <% } %>
                 <%=genderify(customer.gender, 'имеющий', 'имеющая')%>
