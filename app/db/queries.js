@@ -206,7 +206,7 @@ function _getEmailsQuery(filter = {}, count = false, limit = 10, offset = 0) {
     if (count) {
         result.push('count(*) AS count');
     } else {
-        result.push('*, HEX(external_id) as ext_id');
+        result.push('*, HEX(external_id) as ext_id, emails.id as email_id');
     }
     result.push('FROM emails');
     result.push('LEFT JOIN customers c on c.id = emails.customer_id');
