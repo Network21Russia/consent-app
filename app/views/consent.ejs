@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-xs-12">
+    <div class="col">
 
         <form action="/customer/<%= customer.url_hash %>" method="post">
 
@@ -34,38 +34,38 @@
                 на сумму
                 <%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %>&nbsp;рублей,
                 <%=genderify(customer.gender, 'согласен', 'согласна')%>
-                на замену формата мероприятия для&nbsp;следующих билетов:
-                <ul>
-                <% for (var i = 0; i < tickets.length;  i++ ) { let ticket = tickets[i] %>
-                    <li class="form-check">
-                        <% if(!isSignMode){ %>
-                        <input class="form-check-input ticket-checkbox" type="checkbox" name="ticket[]"
-                               value="<%= ticket.id %>" id="ticket_check_<%=i%>" checked
-                               data-amount="<%= ticket.amount %>"
-                               tabindex="100<%=i%>">
-                        <label class="form-check-label" for="ticket_check_<%=i%>">
-                            билет <%=i+1%> (цена <%= ticket.amount %>; заказ <%= ticket.order_number %> от
-                            <%=formatDate(ticket.order_date) %>),
-                        </label>
-                        <% } else { %>
-                            <label class="form-check-label">
-                                заказ <%= ticket.order_number %> от
-                                <%=formatDate(ticket.order_date) %> &mdash;
-                                <%- declension(ticket.count, "билет", "билета", "билетов") %>
-                                на сумму
-                                <%- formatMoney(ticket.amount, 0, 3, '&nbsp;', ',').trim() %>&nbsp;рублей,
-                            </label>
-                        <% } %>
-                    </li>
-                <% } %>
-                <% if(!isSignMode){ %>
-                    <label class="bg-danger text-white px-2 message d-none">
-                        Для подписания согласия вам нужно выбрать хотя&nbsp;бы один билет!
+                на замену формата мероприятия для&nbsp;следующих билетов:</p>
+            <ul>
+            <% for (var i = 0; i < tickets.length;  i++ ) { let ticket = tickets[i] %>
+                <li class="form-check">
+                    <% if(!isSignMode){ %>
+                    <input class="form-check-input ticket-checkbox" type="checkbox" name="ticket[]"
+                           value="<%= ticket.id %>" id="ticket_check_<%=i%>" checked
+                           data-amount="<%= ticket.amount %>"
+                           tabindex="100<%=i%>">
+                    <label class="form-check-label" for="ticket_check_<%=i%>">
+                        билет <%=i+1%> (цена <%= ticket.amount %>; заказ <%= ticket.order_number %> от
+                        <%=formatDate(ticket.order_date) %>),
                     </label>
-                <% } %>
-                </ul>
-                на общую сумму <span class="selected-amount text-nowrap"><%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;рублей.
-                Претензий к ООО «Н21 Ивентс» по поводу замены формата не имею.
+                    <% } else { %>
+                        <label class="form-check-label">
+                            заказ <%= ticket.order_number %> от
+                            <%=formatDate(ticket.order_date) %> &mdash;
+                            <%- declension(ticket.count, "билет", "билета", "билетов") %>
+                            на сумму
+                            <%- formatMoney(ticket.amount, 0, 3, '&nbsp;', ',').trim() %>&nbsp;рублей,
+                        </label>
+                    <% } %>
+                </li>
+            <% } %>
+            <% if(!isSignMode){ %>
+                <label class="bg-danger text-white px-2 message d-none">
+                    Для подписания согласия вам нужно выбрать хотя&nbsp;бы один билет!
+                </label>
+            <% } %>
+            </ul>
+            <p>на общую сумму <span class="selected-amount text-nowrap"><%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;рублей.
+                Претензий к&nbsp;ООО «Н21 Ивентс» по поводу замены формата не имею.
             </p>
             <% if(!isSignMode){ %>
                 <p class="text-center">
