@@ -50,6 +50,11 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
     } else if (filter.letter_not_opened) {
         having_conditions.push('letter_opened = 0')
     }
+    if (filter.letter_delivered) {
+        having_conditions.push('letter_delivered = 1')
+    } else if (filter.letter_not_delivered) {
+        having_conditions.push('letter_delivered = 0')
+    }
 
     if (having_conditions.length) {
         having_clause = 'HAVING ' + having_conditions.join(' AND ');

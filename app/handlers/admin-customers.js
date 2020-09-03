@@ -49,6 +49,10 @@ module.exports = async (ctx, next) => {
             filter.letter_send = true;
         } else if (letters === 3) {
             filter.letter_opened = true;
+        } else if (letters === 4) {
+            filter.letter_not_delivered = true;
+        } else if (letters === 5) {
+            filter.letter_delivered = true;
         }
     }
 
