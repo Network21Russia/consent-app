@@ -13,9 +13,9 @@ async function renderPdf(html) {
         zoomFactor: "1",
         paginationOffset: 1,
         footer: {
-            height: "15mm",
+            height: '10mm',
             contents: {
-                default: '<div style="text-align: center">страница {{page}} из {{pages}}</div>',
+                default: '<div style="text-align: center"><br/>страница {{page}} из {{pages}}</div>',
             }
         },
     };
