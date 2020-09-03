@@ -41,6 +41,8 @@ const config = {
     emailTemplateConsentRequest: +getEnvVariable('EMAIL_TEMPLATE_CONSENT_REQUEST', ''),
     emailTemplateConsentPdf: +getEnvVariable('EMAIL_TEMPLATE_CONSENT_PDF', ''),
 
+    TZCorrection: +getEnvVariable('TZ_CORRECTION', 180),
+
 };
 
 module.exports = config;

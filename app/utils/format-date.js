@@ -1,5 +1,9 @@
 'use strict'
 
+const config = require('../../config/config');
+
+const TZCorrection = config.TZCorrection;
+
 const months = {
     0: 'января',
     1: 'февраля',
@@ -17,7 +21,7 @@ const months = {
 
 function fixTz(date) {
     const _date = new Date(date);
-    _date.setMinutes(_date.getMinutes() + (_date.getTimezoneOffset() * -1));
+    _date.setMinutes(_date.getMinutes() + (_date.getTimezoneOffset() * -1) + TZCorrection);
     return _date
 }
 
