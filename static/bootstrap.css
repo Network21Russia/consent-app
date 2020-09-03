@@ -11106,3 +11106,8 @@ a.text-dark:hover, a.text-dark:focus {
     max-width: 128px;
 }
 
+.customer-static {
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+}
