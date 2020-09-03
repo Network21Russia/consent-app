@@ -1,5 +1,6 @@
 'use strict';
 
+const fs = require('fs');
 const Koa = require('koa');
 const path = require('path');
 const http = require('http');
@@ -26,11 +27,28 @@ function start(logger) {
         alwaysError: true // treat all non-2** http codes as error records in logs
     });
 
+    const viewsDir = path.join(__dirname, 'views');
+    const modifiedTimes = []
+    fs.readdirSync(viewsDir).forEach(file => {
+        const stats = fs.statSync(path.join(viewsDir, file));
+        modifiedTimes.push(stats.mtime.getTime())
+    });
+
+    const lastModified = {
+        'styles': Math.max(...modifiedTimes),
+    }
+
+    const staticDir = path.join(__dirname, '../static');
+    fs.readdirSync(staticDir).forEach(file => {
+        const stats = fs.statSync(path.join(staticDir, file));
+        lastModified[path.parse(file).name] = stats.mtime.getTime();
+    });
+
     const app = new Koa();
     const server = http.createServer(app.callback());
 
     render(app, {
-        root: path.join(__dirname, 'views'),
+        root: viewsDir,
         layout: 'layout',
         viewExt: 'ejs',
         cache: true,
@@ -74,6 +92,7 @@ function start(logger) {
                 ctx.state.formatMoney = formatMoney;
                 ctx.state.genderify = genderify;
                 ctx.state.menu = {};
+                ctx.state.lastModified = lastModified;
 
                 await next()
             } catch (err) {
