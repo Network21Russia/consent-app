@@ -6,7 +6,7 @@ async function renderPdf(html) {
     const pdfOptions = {
         format: 'A4',
         orientation: "portrait",
-        border: '20mm',
+        border: '18mm',
         type: "pdf",
         dpi: 200,
         quality: 80,
