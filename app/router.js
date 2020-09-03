@@ -22,7 +22,8 @@ router
     .post('/customer/:hash', KoaBody(), require('./handlers/customer-consent-sign'))
     .get('/customer/:hash/success', require('./handlers/customer-consent-success'))
 
-    .post('/webhook/open', KoaBody(), require('./handlers/email-open-webhook'))
+    .post('/webhook/delivered', KoaBody(), require('./handlers/webhook-email-delivered'))
+    .post('/webhook/open', KoaBody(), require('./handlers/webhook-email-open'))
 
     .get('/admin', require('./handlers/admin-customers'))
 

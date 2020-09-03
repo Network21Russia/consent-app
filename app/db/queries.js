@@ -78,6 +78,7 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
                         email,
                         url_hash,
                         letter_send,
+                        letter_delivered,
                         letter_opened,
                         has_consents,
                         COUNT(tickets.id)                                      AS total_tickets,
@@ -90,10 +91,11 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
                               customers.patronimic,
                               customers.gender,
                               customers.email,
-                              HEX(hash)                                    as url_hash,
-                              NOT ISNULL(emails.id)                        AS letter_send,
-                              IF(SUM(IFNULL(emails.is_open, 0)) > 0, 1, 0) AS letter_opened,
-                              NOT ISNULL(consents.id)                      AS has_consents
+                              HEX(hash)                                         AS url_hash,
+                              NOT ISNULL(emails.id)                             AS letter_send,
+                              IF(SUM(IFNULL(emails.is_delivered, 0)) > 0, 1, 0) AS letter_delivered,
+                              IF(SUM(IFNULL(emails.is_open, 0)) > 0, 1, 0)      AS letter_opened,
+                              NOT ISNULL(consents.id)                           AS has_consents
                        FROM customers
                                 LEFT JOIN emails ON emails.customer_id = customers.id ${emails_join_condition}
                                 LEFT JOIN consents ON consents.customer_id = customers.id
@@ -321,6 +323,10 @@ function insertEmailQuery() {
     return "INSERT INTO `emails`(`external_id`, `customer_id`, `template_id`) VALUES (UNHEX(REPLACE(?, '-', '')), ?, ?)";
 }
 
+function setEmailDeliveredQuery() {
+    return "UPDATE `emails` SET `is_delivered` = 1,`delivered_datetime` = CURRENT_TIMESTAMP WHERE external_id = UNHEX(REPLACE(?, '-', ''))";
+}
+
 function setEmailOpenQuery() {
     return "UPDATE `emails` SET `is_open` = 1,`open_datetime` = CURRENT_TIMESTAMP WHERE external_id = UNHEX(REPLACE(?, '-', ''))";
 }
@@ -344,6 +350,7 @@ module.exports = {
     insertTicketsQuery: insertTicketsQuery,
     insertConsentQuery: insertConsentQuery,
     insertEmailQuery: insertEmailQuery,
+    setEmailDeliveredQuery: setEmailDeliveredQuery,
     setEmailOpenQuery: setEmailOpenQuery,
     setTicketsConsentQuery: setTicketsConsentQuery,
 }
