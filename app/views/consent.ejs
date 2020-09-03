@@ -3,7 +3,8 @@
 
         <form action="/customer/<%= customer.url_hash %>" method="post">
 
-            <h1 class="text-center">Согласие</h1>
+            <h1 class="text-center">Соглашение</h1>
+            <p class="text-center">о замене формата мероприятия</p>
 
             <table border="0" width="100%">
                 <tr>
@@ -11,81 +12,150 @@
                         <p>г. Самара</p>
                     </td>
                     <td>
-                        <p class="text-right"><%= formatDate(date)%> г.</p>
+                        <p class="text-right"><%= formatDate(date) %> г.</p>
                     </td>
                 </tr>
             </table>
 
-            <p>Я, <abbr class="customer-static" title="Изменить" tabindex="10"><%=
-                     ([customer.surname, customer.name, customer.patronimic].filter(Boolean).join(' ')).trim()
+            <p><abbr class="customer-static" title="Изменить" tabindex="10"><%=
+                    ([customer.surname, customer.name, customer.patronimic].filter(Boolean).join(' ')).trim()
                     %>,</abbr>
                 <% if(!isSignMode){ %>
                     <span class="customer-edit form-inline d-none">
                         <input type="text" class="form-control form-control-sm my-1 " name="surname" disabled
-                               tabindex="11" placeholder="Фамилия" value="<%=customer.surname%>"/>&nbsp;
+                               tabindex="11" placeholder="Фамилия" value="<%= customer.surname %>"/>&nbsp;
                         <input type="text" class="form-control form-control-sm my-1" name="name" disabled
-                               tabindex="12" placeholder="Имя" value="<%=customer.name%>"/>,&nbsp;
+                               tabindex="12" placeholder="Имя" value="<%= customer.name %>"/>,&nbsp;
                     </span>
                 <% } %>
-                <%=genderify(customer.gender, 'имеющий', 'имеющая')%>
-                в наличии
-                <%- declension(ticketsTotals.count, "билет", "билета", "билетов") %>
-                на&nbsp;мероприятия ООО «Н21&nbsp;Ивентс»,
-                на&nbsp;сумму
-                <%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %>&nbsp;рублей,
-                <%=genderify(customer.gender, 'согласен', 'согласна')%>
-                на&nbsp;замену формата мероприятия для&nbsp;следующих билетов:</p>
+                <%= genderify(customer.gender, 'являющийся', 'являющаяся') %>
+                НПА и&nbsp;слушателем (участником)
+                <span class="text-nowrap">WES-семинаров</span>
+                системы Нетворк&nbsp;21, <%= genderify(customer.gender, 'действующий', 'действующая') %>
+                на&nbsp;основании Гражданского кодекса РФ, <%= genderify(customer.gender, 'именуемый', 'именуемая')%>
+                в&nbsp;дальнейшем &laquo;Сторона1&raquo;, с&nbsp;одной стороны и
+            </p>
+            <p>
+                <span class="text-nowrap">ООО &laquo;Н21&nbsp;Ивентс&raquo;</span>
+                в&nbsp;лице директора Горшковой Ольги Анатольевны,
+                действующей
+                на&nbsp;основании Устава, именуемое в&nbsp;дальнейшем &laquo;Сторона2&raquo; с&nbsp;другой стороны,
+                а&nbsp;вместе именуемые &laquo;Стороны&raquo;, заключили настоящее соглашение о&nbsp;нижеследующем:
+            </p>
+            <p>1. Принимая во&nbsp;внимание сложившиеся обстоятельства, а&nbsp;именно тот факт, что в&nbsp;связи с&nbsp;распространением
+                на&nbsp;территории Российской Федерации новой коронавирусной инфекции вызванной
+                <span class="text-nowrap">2019-nCoV</span>
+                , признаной обстоятельством непреодолимой силы и&nbsp;приведшей к&nbsp;введению режима повышенной
+                готовности в&nbsp;большинстве регионов, в&nbsp;том числе в&nbsp;городах проведения WES&nbsp;&mdash;
+                семинаров системы Нетворк&nbsp;21, &laquo;Стороны&raquo; пришли к&nbsp;соглашению об&nbsp;изменении формата
+                мероприятия офлайн на&nbsp;онлайн и&nbsp;переносу сроков проведения для ранее оплаченных нижеследующих
+                заказов, а&nbsp;именно:
+            </p>
             <ul>
-            <% for (var i = 0; i < tickets.length;  i++ ) { let ticket = tickets[i] %>
+                <% for (var i = 0; i < tickets.length;  i++ ) { let ticket = tickets[i] %>
                 <li class="form-check">
                     <% if(!isSignMode){ %>
-                    <input class="form-check-input ticket-checkbox" type="checkbox" name="ticket[]"
-                           value="<%= ticket.id %>" id="ticket_check_<%=i%>" checked
-                           data-amount="<%= ticket.amount %>"
-                           tabindex="100<%=i%>">
-                    <label class="form-check-label" for="ticket_check_<%=i%>">
-                        билет <%=i+1%> (цена <%= ticket.amount %> руб.; заказ <%= ticket.order_number %> от
-                        <%=formatDate(ticket.order_date) %>),
-                    </label>
+                        <input class="form-check-input ticket-checkbox" type="checkbox" name="ticket[]"
+                               value="<%= ticket.id %>" id="ticket_check_<%= i %>" checked
+                               data-amount="<%= ticket.amount %>"
+                               tabindex="100<%= i %>">
+                        <label class="form-check-label" for="ticket_check_<%= i %>">
+                            билет <%= i + 1 %> (цена <%- formatMoney(ticket.amount, 0, 3, '&nbsp;', ',').trim() %>
+                            руб.; заказ <%= ticket.order_number %> от
+                            <%= formatDate(ticket.order_date) %>),
+                        </label>
                     <% } else { %>
                         <label class="form-check-label">
                             заказ <%= ticket.order_number %> от
-                            <%=formatDate(ticket.order_date) %> &mdash;
+                            <%= formatDate(ticket.order_date) %> &mdash;
                             <%- declension(ticket.count, "билет", "билета", "билетов") %>
                             на сумму
-                            <%- formatMoney(ticket.amount, 0, 3, '&nbsp;', ',').trim() %>&nbsp;рублей,
+                            <%- formatMoney(ticket.amount, 0, 3, '&nbsp;', ',').trim() %>&nbsp;руб.,
                         </label>
                     <% } %>
                 </li>
-            <% } %>
-            <% if(!isSignMode){ %>
-                <label class="bg-danger text-white px-2 message d-none">
-                    Для подписания согласия вам нужно выбрать хотя&nbsp;бы один билет!
-                </label>
-            <% } %>
+                <% } %>
+                <% if(!isSignMode){ %>
+                    <label class="bg-danger text-white px-2 message d-none">
+                        Для подписания согласия вам нужно выбрать хотя&nbsp;бы один билет!
+                    </label>
+                <% } %>
             </ul>
-            <p>на&nbsp;общую сумму <span class="selected-amount text-nowrap"><%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;рублей.
-                Претензий к&nbsp;ООО «Н21&nbsp;Ивентс» по поводу замены формата не&nbsp;имею.
+            <p>на&nbsp;общую сумму
+                <span class="selected-amount text-nowrap"><%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;руб.
             </p>
+
+            <p>2. Подписанием настоящего соглашения &laquo;Сторона 1&raquo; подтверждает свое добровольное намерение о&nbsp;переносе
+                указанных в&nbsp;п.1 настоящего соглашения билетов в&nbsp;количестве
+                <span class="text-nowrap selected-count"><%- declension(ticketsTotals.count, "штука", "штуки", "штук") %></span>
+                на&nbsp;сумму
+                <span class="selected-amount text-nowrap"><%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;руб.
+                на&nbsp;онлайн FE&nbsp;<span class="text-nowrap">16&mdash;18 октября</span>
+                2020&nbsp;г. и&nbsp;не&nbsp;имеет претензий к&nbsp;&laquo;Стороне2&raquo; по&nbsp;поводу замены формата
+                мероприятия и&nbsp;стоимости участия.
+            </p>
+
+            <p>3. Настоящее соглашение подписывается &laquo;Сторонами&raquo; простой электронной подписью формирующейся
+                на&nbsp;основании данных НПА при оформлении заказа согласно пункту 2 статьи 5 Федерального Закона
+                &laquo;&#8470;&nbsp;63 от&nbsp;<span class="text-nowrap">06.04.2011</span> &laquo;Об&nbsp;электронной подписи&raquo; и&nbsp;начинает
+                действовать с&nbsp;момента его подписания, а&nbsp;так&nbsp;же не&nbsp;имеет обратной силы.
+            </p>
+
+            <p>4. Соглашение составлено в&nbsp;двух подлинных экземплярах для каждой из&nbsp;сторон и&nbsp;направляется
+                им&nbsp;по&nbsp;<span class="text-nowrap">e-mail</span>.
+            </p>
+
+            <p>5. При заключении настоящего соглашения &laquo;Стороны&raquo; руководствовались федеральным и&nbsp;региональным
+                законодательством: статьей 4.1 Федерального закона от&nbsp;<span class="text-nowrap">21.12.1994</span> &#8470;&nbsp;<span class="text-nowrap">
+                    68-ФЗ
+                </span> &laquo;О&nbsp;защите населения и&nbsp;территорий от&nbsp;чрезвычайных ситуаций природного и&nbsp;техногенного
+                характера&raquo;, Указом Президента Российской Федерации от&nbsp;<span class="text-nowrap">25.03.2020</span> &#8470;&nbsp;206
+                &laquo;Об&nbsp;объявлении в&nbsp;Российской Федерации нерабочих дней&raquo;, Указом Президента
+                Российской Федерации от&nbsp;<span class="text-nowrap">02.04.2020</span> &#8470;&nbsp;239 &laquo;О&nbsp;мерах по&nbsp;обеспечению
+                <span class="text-nowrap">санитарно-эпидемиологического</span>
+                благополучия населения на&nbsp;территории Российской Федерации в&nbsp;связи с&nbsp;распространением
+                новой коронавирусной инфекции (<span class="text-nowrap">COVID-19</span>)&raquo;,
+                Указом Президента Российской Федерации от&nbsp;<span class="text-nowrap">28.04.2020</span> &#8470;&nbsp;294
+                &laquo;О&nbsp;продлении действия мер по&nbsp;обеспечению
+                <span class="text-nowrap">санитарно-эпидемиологического</span>
+                благополучия населения на&nbsp;территории Российской Федерации в&nbsp;связи с&nbsp;распространением
+                новой коронавирусной инфекции (<span class="text-nowrap">COVID-19</span>)&raquo;,
+                Указом Президента Российской Федерации от&nbsp;<span class="text-nowrap">11.05.2020</span> &#8470;&nbsp;316
+                &laquo;Об&nbsp;определении порядка продления действия мер по&nbsp;обеспечению
+                <span class="text-nowrap">санитарно-эпидемиологического</span>
+                благополучия населения в&nbsp;субъектах Российской Федерации в&nbsp;связи с&nbsp;распространением новой
+                коронавирусной инфекции (<span class="text-nowrap">COVID-19</span>)&raquo;,
+                постановлением Главного государственного санитарного врача Российской Федерации от&nbsp;<span class="text-nowrap">
+                    13.03.2020
+                </span> &#8470;&nbsp;6 &laquo;О&nbsp;дополнительных мерах по&nbsp;снижению рисков распространения
+                <span class="text-nowrap">COVID-19</span>
+                в&nbsp;целях защиты НПА от&nbsp;угрозы возникновения чрезвычайной ситуации, предотвращения угрозы
+                общественно опасных последствий, возникших в&nbsp;результате виновных действий (бездействия) физических
+                или юридических лиц, предусмотренных статьями 6.3, 6.4, 19.4 Кодекса Российской Федерации об&nbsp;административных
+                правонарушениях, статьей 236 Уголовного кодекса Российской Федерации.
+            </p>
+
             <% if(!isSignMode){ %>
                 <p class="text-center">
-                    <button type="submit" class="btn btn-primary submit" tabindex="200<%=tickets.length+1%>">Подписать</button>
+                    <button type="submit" class="btn btn-primary submit" tabindex="200<%= tickets.length + 1 %>">
+                        Подписать
+                    </button>
                 </p>
             <% } else { %>
+                <p>6. Простые электронные подписи сторон:</p>
                 <table border="0" width="100%">
                     <tr>
-                        <td>
-                            <p>Покупатель: <br/><br/>
+                        <td valign="top">
+                            <p>Сторона 1: <br/><br/>
                                 <u>
-                                    <%= ([customer.surname, customer.name, customer.patronimic].filter(Boolean).join(' ')).trim() %>
+                                    НПА <%= ([customer.surname, customer.name, customer.patronimic].filter(Boolean).join(' ')).trim() %>
                                 </u>
                             </p>
                         </td>
-                        <td>
-                            <p>Продавец: <br/><br/>
-                                <u>
-                                <%= consentSigner %>
-                                </u>
+                        <td valign="top">
+                            <p>Сторона 2: <br/><br/>
+                                Директор <span class="text-nowrap">ООО &laquo;Н21&nbsp;Ивентс&raquo;</span><br/>
+                                <u>Горшкова О.А.</u>
                             </p>
                         </td>
                     </tr>
@@ -105,7 +175,12 @@
             for (var i = 0; i < checked_tickets.length; i++) {
                 total_amount += checked_tickets[i].getAttribute('data-amount') * 1;
             }
-            document.querySelector('.selected-amount').innerText = formatMoney(total_amount, 0, 3, ' ', ',').trim();
+            var amounts = document.querySelectorAll('.selected-amount');
+            for (var i = 0; i < amounts.length; i++) {
+                amounts[i].innerText = formatMoney(total_amount, 0, 3, ' ', ',').trim();
+            }
+            document.querySelector('.selected-count').innerText = declension(checked_tickets.length, "штука",
+            "штуки", "штук");
             if (total_amount > 0) {
                 addClass(document.querySelector('.message'), 'd-none');
                 document.querySelector('.submit').removeAttribute('disabled');

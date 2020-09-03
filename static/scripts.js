@@ -72,3 +72,37 @@ function formatMoney(a, n, x, s, c) {
 
     return (c ? num.replace('.', c) : num).replace(new RegExp(re, 'g'), '$&' + (s || ','));
 }
+
+function declension(count, oneNominative, severalNominative, severalGenitive, options) {
+    options = options || {};
+    var params = Object.assign({}, {printCount: true, delimiter: ' '}, options);
+    var result = [];
+    if (params.printCount) {
+        result.push(count);
+    }
+
+    if (typeof count !== 'number') {
+        return '';
+    }
+    if (!(Number.isFinite(count) && !(count % 1))) {
+        result.push(severalNominative);
+        return result.join(params.delimiter);
+    }
+    count = Math.abs(count);
+    count %= 100;
+    if (count >= 5 && count <= 20) {
+        result.push(severalGenitive);
+        return result.join(params.delimiter);
+    }
+    count %= 10;
+    if (count === 1) {
+        result.push(oneNominative);
+        return result.join(params.delimiter);
+    }
+    if (count >= 2 && count <= 4) {
+        result.push(severalNominative);
+        return result.join(params.delimiter);
+    }
+    result.push(severalGenitive);
+    return result.join(params.delimiter);
+}
