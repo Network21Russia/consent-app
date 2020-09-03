@@ -85,10 +85,10 @@
                             нет
                         <% } %>
                     <td class="align-middle text-center">
-                        <% if(customer.letter_delivered) { %>
-                            <span class="d-inline-block px-1 bg-info text-white">доставлено</span>
-                        <% } else if(customer.letter_opened) { %>
+                        <% if(customer.letter_opened) { %>
                             <span class="d-inline-block px-1 bg-info text-white">прочитано</span>
+                        <% } else if(customer.letter_delivered) { %>
+                                <span class="d-inline-block px-1 bg-info text-white">доставлено</span>
                         <% } else { %>
                             &mdash;
                         <% } %>
