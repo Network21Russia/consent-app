@@ -200,6 +200,9 @@ function _getEmailsQuery(filter = {}, count = false, limit = 10, offset = 0) {
     if (filter.template) {
         where_conditions.push('template_id = ?');
     }
+    if (filter.isDelivered) {
+        where_conditions.push('is_delivered = ?');
+    }
     if (filter.isOpen) {
         where_conditions.push('is_open = ?');
     }

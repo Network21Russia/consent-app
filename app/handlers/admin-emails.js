@@ -17,6 +17,7 @@ module.exports = async (ctx, next) => {
     const offset = (ctx.query.offset || 0) * 1;
     const mailTemplate = (ctx.query.template || 0) * 1;
     const isOpen = (ctx.query.isOpen || 0) * 1;
+    const isDelivered = (ctx.query.isDelivered || 0) * 1;
 
     const params = [];
     const filter = {};
@@ -37,6 +38,12 @@ module.exports = async (ctx, next) => {
         filter_query.push(`isOpen=${isOpen}`)
         filter.isOpen = true;
         params.push(isOpen === 1 ? 0 : 1 )
+    }
+
+    if (isDelivered) {
+        filter_query.push(`isDelivered=${isDelivered}`)
+        filter.isDelivered = true;
+        params.push(isDelivered === 1 ? 0 : 1 )
     }
 
     let query = getEmailsQuery(filter, config.itemsOnPage, offset * config.itemsOnPage);
@@ -73,6 +80,7 @@ module.exports = async (ctx, next) => {
         pagePath: pagePath(ctx.state.activeMenu, customerId, filter_query),
         template: mailTemplate,
         isOpen: isOpen,
+        isDelivered: isDelivered,
         emailTemplateConsentRequest: config.emailTemplateConsentRequest,
         emailTemplateConsentPdf: config.emailTemplateConsentPdf,
         emailTemplateNames: emailTemplateNames,

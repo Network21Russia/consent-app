@@ -18,6 +18,13 @@
                 </option>
             </select>
 
+            <label class="my-1 mr-2" for="isOpen">Доставлено</label>
+            <select class="custom-select my-1 mr-sm-2" id="isDelivered" name="isDelivered">
+                <option <%=isDelivered === 0 ? 'selected' : ''%> value="0">...</option>
+                <option <%=isDelivered === 1 ? 'selected' : ''%> value="1">Нет</option>
+                <option <%=isDelivered === 2 ? 'selected' : ''%> value="2">Да</option>
+            </select>
+
             <label class="my-1 mr-2" for="isOpen">Прочитано</label>
             <select class="custom-select my-1 mr-sm-2" id="isOpen" name="isOpen">
                 <option <%=isOpen === 0 ? 'selected' : ''%> value="0">...</option>
