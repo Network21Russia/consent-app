@@ -15,7 +15,7 @@ async function renderPdf(html) {
         footer: {
             height: '10mm',
             contents: {
-                default: '<div style="text-align: center"><br/>страница {{page}} из {{pages}}</div>',
+                default: '<div style="text-align: center"><br/><small>страница {{page}} из {{pages}}</small></div>',
             }
         },
     };
