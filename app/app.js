@@ -8,7 +8,9 @@ const render = require('koa-ejs');
 const mount = require('koa-mount');
 const auth = require('koa-basic-auth');
 const compress = require('koa-compress');
-const minifier = require('koa-html-minifier')
+const sslify = require('koa-sslify').default;
+const xForwardedProtoResolver  = require('koa-sslify').xForwardedProtoResolver ;
+const minifier = require('koa-html-minifier');
 const {KoaReqLogger} = require('koa-req-logger');
 const cacheControl = require('koa-cache-control');
 const shutdown = require('koa-graceful-shutdown');
@@ -19,6 +21,10 @@ const {genderify} = require('./utils/genderify');
 const {formatDate, formatDateTime} = require('./utils/format-date');
 const formatMoney = require('./utils/format-money');
 const router = require('./router');
+
+const sslifyMiddleware = process.env.NODE_ENV === 'production'
+    ? sslify({ resolver: xForwardedProtoResolver })
+    : async (ctx, next) =>  next();
 
 function start(logger) {
 
@@ -58,6 +64,7 @@ function start(logger) {
 
     app
         .use(koaLogger.getMiddleware())
+        .use(sslifyMiddleware)
         .use(compress({
             threshold: 2048,
             gzip: {
