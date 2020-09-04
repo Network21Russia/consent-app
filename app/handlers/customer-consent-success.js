@@ -2,7 +2,7 @@
 
 
 module.exports = async (ctx, next) => {
-    ctx.state.title = 'Согласие подписано!';
+    ctx.state.title = 'Соглашение подписано!';
 
     const hash = ctx.params.hash || '';
     if (!hash) {

@@ -10,7 +10,7 @@ const composeTickets = require('../utils/compose-tickets');
 const {genderify, isMale, isFemale} = require('../utils/genderify');
 
 module.exports = async (ctx, next) => {
-    ctx.state.title = 'Согласие';
+    ctx.state.title = 'Соглашение';
 
     const hash = ctx.params.hash || '';
     if (!hash) {
