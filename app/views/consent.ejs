@@ -32,12 +32,12 @@
                 Независимым Предпринимателем Амвэй и&nbsp;участником
                 <span class="text-nowrap">WES семинаров</span>
                 системы Нетворк&nbsp;21, <%= genderify(customer.gender, 'именуемый', 'именуемая') %>
-                в&nbsp;дальнейшем &laquo;Сторона&nbsp;1 &raquo;, с&nbsp;одной стороны и
+                в&nbsp;дальнейшем &laquo;Сторона&nbsp;1&raquo;, с&nbsp;одной стороны и
             </p>
             <p>
                 <span class="text-nowrap">ООО &laquo;Н21&nbsp;Ивентс&raquo;</span>
                 в&nbsp;лице директора Горшковой Ольги Анатольевны,
-                действующей на&nbsp;основании Устава, именуемое в&nbsp;дальнейшем &laquo;Сторона&nbsp;2 &raquo; с&nbsp;другой
+                действующей на&nbsp;основании Устава, именуемое в&nbsp;дальнейшем &laquo;Сторона&nbsp;2&raquo; с&nbsp;другой
                 стороны, а&nbsp;вместе именуемые &laquo;Стороны&raquo;, заключили настоящее соглашение о&nbsp;нижеследующем:
             </p>
             <p>
@@ -82,13 +82,13 @@
                 <span class="selected-amount text-nowrap"><%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;руб.
             </p>
 
-            <p>2. Подписанием настоящего соглашения &laquo;Сторона 1&raquo; подтверждает свое добровольное намерение о&nbsp;переносе
+            <p>2. Подписанием настоящего соглашения &laquo;Сторона&nbsp;1&raquo; подтверждает свое добровольное намерение о&nbsp;переносе
                 указанных в&nbsp;п.1 настоящего Cоглашения <b><i>билетов в&nbsp;количестве
                         <span class="text-nowrap selected-count"><%- declension(ticketsTotals.count, "штука", "штуки", "штук") %></span>
                         на&nbsp;сумму
                         <span class="selected-amount text-nowrap"><%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;руб.</i></b>
                 на&nbsp;онлайн-форум Free Enterprise&nbsp;<span class="text-nowrap">16&mdash;18 октября</span>
-                2020&nbsp;г. и&nbsp;не&nbsp;имеет претензий к&nbsp;&laquo;Стороне&nbsp;2 &raquo; по&nbsp;поводу замены формата
+                2020&nbsp;г. и&nbsp;не&nbsp;имеет претензий к&nbsp;&laquo;Стороне&nbsp;2&raquo; по&nbsp;поводу замены формата
                 мероприятия и&nbsp;стоимости участия.
             </p>
 
@@ -133,7 +133,7 @@
                     <table border="0" width="100%">
                         <tr>
                             <td valign="top">
-                                <p>Сторона 1 <br/><br/>
+                                <p>Сторона 1<br/><br/>
                                     Независимый Предприниматель Амвэй<br/>
                                     <u>
                                         <%= ([customer.surname, customer.name, customer.patronimic].filter(Boolean).join(' ')).trim() %>
@@ -145,7 +145,7 @@
                                 </p>
                             </td>
                             <td valign="top">
-                                <p>Сторона 2 <br/><br/>
+                                <p>Сторона 2<br/><br/>
                                     Директор <span class="text-nowrap">ООО &laquo;Н21&nbsp;Ивентс&raquo;</span><br/>
                                     <u>Горшкова О.А.</u>
                                 </p>
