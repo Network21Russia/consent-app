@@ -62,10 +62,14 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
 
     const result = [];
 
+    if (count) {
+        result.push('SELECT count(*) as count, rest_tickets FROM (');
+    }
+
     result.push('SELECT');
 
     if (count) {
-        result.push('count(*) AS count, total_tickets - consent_tickets AS rest_tickets');
+        result.push('t.*, total_tickets - consent_tickets AS rest_tickets');
     } else {
         result.push(`
             *,
@@ -118,7 +122,9 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
         result.push('HAVING rest_tickets <= 0')
     }
 
-    if (!count) {
+    if (count) {
+        result.push(') r');
+    } else {
         result.push('ORDER BY surname, name, patronimic, t.id');
         result.push(`LIMIT ${limit} OFFSET ${offset}`);
     }

@@ -74,7 +74,8 @@ module.exports = async (ctx, next) => {
         ctx.throw(500);
     }
 
-    query = getCustomersCountQuery(filter)
+    query = getCustomersCountQuery(filter);
+    console.log('blah2', query);
     const count = await db.executeQuery(query, params);
     if (!(Array.isArray(count))) {
         ctx.throw(500);
