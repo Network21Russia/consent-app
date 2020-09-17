@@ -137,7 +137,7 @@ function getConsentsQuery(filter = {}, limit = 10, offset = 0) {
 }
 
 function getConsentsCountQuery(filter = {}, limit = 10, offset = 0) {
-    return _getConsentsQuery(filter, false, limit, offset);
+    return _getConsentsQuery(filter, true, limit, offset);
 }
 
 function _getConsentsQuery(filter = {}, count = false, limit = 10, offset = 0) {
