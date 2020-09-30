@@ -2,6 +2,10 @@
     <div class="col">
         <h1><%= title %></h1>
 
+        <% if(error) { %>
+            <p class="text-danger"><%= error %></p>
+        <% } %>
+
         <% if(finished) { %>
             <p>Рассылка успешно завершена.</p>
         <% } else if (started) { %>
@@ -13,16 +17,55 @@
             </script>
         <% } else { %>
             <form method="get" action="<%= menu[activeMenu].path %>" class="my-4">
-                <p>Нажимая на кнопку &laquo;Старт&raquo; вы запускаете рассылку. Письма будут разосланы покупателям,
-                    имеющим не нулевые остатки по билетам.</p>
+
+                <div class="form-group">
+                    <label for="letter_type">Выберите рассылку</label>
+                    <select class="form-control" name="letter_type" id="letter_type">
+                        <option value="">...</option>
+                        <option value="consent">Рассылка писем о подписании соглашений</option>
+                        <option value="code">Рассылка активационных кодов для участников</option>
+                    </select>
+                    <p class="mt-2 text-danger d-none letter-type-hint" id="hint-consent">Письма будут разосланы покупателям,
+                        имеющим не нулевые остатки по билетам.</p>
+                    <p class="mt-2 text-danger d-none letter-type-hint" id="hint-code">Письма будут разосланы покупателям,
+                        подписавшим соглашение.</p>
+                </div>
+
+                <p>Нажимая на кнопку &laquo;Старт&raquo; вы запускаете рассылку. </p>
 
                 <input type="hidden" name="started" value="1">
 
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary my-1">Старт</button>
+                    <button type="submit" class="submit btn btn-primary my-1" disabled
+                            onclick="return confirm('Запустить рассылку?');">Старт</button>
                 </div>
             </form>
         <% } %>
 
     </div>
 </div>
+<script>
+    function initSelect() {
+        var submit = document.querySelector('.submit');
+        var letterTypeSelect = document.querySelector('#letter_type');
+        addEventListener(letterTypeSelect, 'change', function () {
+            var hints = document.querySelectorAll('.letter-type-hint');
+            for (var i = 0; i < hints.length; i++) {
+                addClass(hints[i], 'd-none');
+            }
+
+            if (this.value) {
+                removeClass(document.querySelector('#hint-'+this.value), 'd-none');
+                submit.removeAttribute('disabled');
+            } else {
+                submit.setAttribute('disabled', 'disabled');
+            }
+        });
+    }
+
+    function init() {
+        initSelect();
+    }
+
+    ready(init);
+</script>

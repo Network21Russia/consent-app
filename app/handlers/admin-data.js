@@ -8,7 +8,9 @@ const iconv = require('iconv-lite');
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
-const {insertCustomerQuery, getCustomerByEmailQuery, insertTicketsQuery} = require('../db/queries')
+const {
+    insertCustomerQuery, getCustomerByEmailQuery, insertTicketsQuery, getTicketsIdWithoutCodes, truncateTemporaryTable,
+    fillTemporaryTable, fillCodesToTickets } = require('../db/queries')
 const menu = require('../admin-menu');
 const pagePath = require('../utils/page-path');
 
@@ -19,7 +21,7 @@ const delimetersNames = {
     ';': 'точка с запятой',
 }
 
-module.exports = async (ctx, next) => {
+module.exports = async (ctx) => {
 
     ctx.state.title = 'Данные';
     ctx.state.menu = menu;
@@ -106,54 +108,80 @@ module.exports = async (ctx, next) => {
 
                 parsedRowsCount = rows.length
 
-                for (let row of rows) {
-                    try {
+                if (ctx.request.body.content && ctx.request.body.content === 'codes') {
+                    const idsWithConsents = await db.executeQuery(getTicketsIdWithoutCodes(true));
+                    const idsWithoutConsents = await db.executeQuery(getTicketsIdWithoutCodes(false));
 
-                        const email = row[7];
-                        const hash = crypto.createHash('md5').update(email + config.hashSecret).digest("hex");
-                        const params = [
-                            row[7],
-                            row[4],
-                            row[5],
-                            null,
-                            row[6],
-                            hash,
-                            row[4],
-                            row[5],
-                            null,
-                            row[6],
-                        ]
+                    const ids = [].concat(idsWithConsents, idsWithoutConsents)
 
-                        const upsertResult = await db.executeQuery(insertCustomerQuery(), params);
+                    const limit = Math.min(parsedRowsCount, ids.length);
 
-                        let customerId = upsertResult.insertId || 0;
+                    if (limit > 0) {
+                        const values = [];
 
-                        if (!customerId) {
-                            const result = await db.executeQuery(getCustomerByEmailQuery(), [row[7]]);
-                            if (Array.isArray(result) && result.length) {
-                                customerId = result[0].id
-                            }
+                        for (let i = 0; i < limit; i++) {
+                            values.push([ids[i].id, rows[i][0]]);
                         }
 
-                        if (customerId) {
-
-                            const ticketsCount = row[2] * 1;
-                            const amount = row[3] * 1;
-                            const order_number = row[0] * 1;
-                            const date = new Date(row[1]);
-
-                            const ticketParams = [customerId, order_number, date, amount]
-                            const params = []
-
-                            for (let i = 0; i < ticketsCount; i++) {
-                                params.push(ticketParams)
-                            }
-
-                            await db.executeQuery(insertTicketsQuery(), [params]);
-                        }
-                    } catch (e) {
-                        throw e;
+                        await db.executeQuery(truncateTemporaryTable());
+                        await db.executeQuery(fillTemporaryTable(), [values]);
+                        await db.executeQuery(fillCodesToTickets());
+                        await db.executeQuery(truncateTemporaryTable());
                     }
+
+                } else {
+
+                    for (let row of rows) {
+                        try {
+
+                            const email = row[7];
+                            const hash = crypto.createHash('md5').update(email + config.hashSecret).digest("hex");
+                            const params = [
+                                row[7],
+                                row[4],
+                                row[5],
+                                null,
+                                row[6],
+                                hash,
+                                row[4],
+                                row[5],
+                                null,
+                                row[6],
+                            ]
+
+                            const upsertResult = await db.executeQuery(insertCustomerQuery(), params);
+
+                            let customerId = upsertResult.insertId || 0;
+
+                            if (!customerId) {
+                                const result = await db.executeQuery(getCustomerByEmailQuery(), [row[7]]);
+                                if (Array.isArray(result) && result.length) {
+                                    customerId = result[0].id
+                                }
+                            }
+
+                            if (customerId) {
+
+                                const ticketsCount = row[2] * 1;
+                                const amount = row[3] * 1;
+                                const order_number = row[0] * 1;
+                                const date = new Date(row[1]);
+
+                                const ticketParams = [customerId, order_number, date, amount]
+                                const params = []
+
+                                for (let i = 0; i < ticketsCount; i++) {
+                                    params.push(ticketParams)
+                                }
+
+                                await db.executeQuery(insertTicketsQuery(), [params]);
+                            }
+                        } catch (e) {
+                            // noinspection ExceptionCaughtLocallyJS
+                            throw e;
+                        }
+                    }
+
                 }
 
                 await db.executeQuery("COMMIT");

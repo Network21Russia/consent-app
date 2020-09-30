@@ -15,6 +15,7 @@
                     <th class="align-middle" scope="col">Билеты</th>
                     <th class="align-middle" scope="col">Сумма, руб.</th>
                     <th class="align-middle" scope="col">Скачать</th>
+                    <th class="align-middle" scope="col">Коды<br/>отправлены</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -34,6 +35,7 @@
                                 <i class="icon pdf"></i>
                             </a>
                         </td>
+                        <td class="align-middle"><%= consent.code_sent ? 'Да' : 'Нет' %></td>
                     </tr>
                 <% }); %>
                 </tbody>

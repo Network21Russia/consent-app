@@ -40,6 +40,7 @@ const config = {
     emailAdminEmail: getEnvVariable('EMAIL_ADMIN_EMAIL', ''),
     emailTemplateConsentRequest: +getEnvVariable('EMAIL_TEMPLATE_CONSENT_REQUEST', ''),
     emailTemplateConsentPdf: +getEnvVariable('EMAIL_TEMPLATE_CONSENT_PDF', ''),
+    emailTemplateCodes: +getEnvVariable('EMAIL_TEMPLATE_CODES', ''),
 
     TZCorrection: +getEnvVariable('TZ_CORRECTION', 180),
 

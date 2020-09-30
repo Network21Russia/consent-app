@@ -349,6 +349,65 @@ function setTicketsConsentQuery() {
     return "UPDATE `tickets` SET `consent_id` = ? WHERE id IN (?)";
 }
 
+function getTicketsIdWithoutCodes(withConsents = true) {
+    return "SELECT id FROM tickets WHERE code IS NULL AND consent_id " + (withConsents ? "IS NOT NULL" : "IS NULL");
+}
+
+function truncateTemporaryTable() {
+    return "TRUNCATE TABLE codes_tmp";
+}
+
+function fillTemporaryTable() {
+    return 'INSERT INTO codes_tmp (id, code) VALUES ?';
+}
+
+function fillCodesToTickets() {
+    return `UPDATE tickets
+                LEFT JOIN codes_tmp ON tickets.id = codes_tmp.id
+            SET tickets.code = codes_tmp.code
+            WHERE tickets.code IS NULL`;
+}
+
+function getCodesToSendCount() {
+    return _getCodesToSend(true);
+}
+
+function getCodesToSend(limit, offset) {
+    return _getCodesToSend(false, limit, offset);
+}
+
+function _getCodesToSend(count = false, limit, offset) {
+    limit = limit || 10;
+    offset = offset || 0;
+
+    let q = `SELECT tickets.customer_id, 
+                   email,
+                   name,
+                   surname,
+                   patronimic,
+                   gender,
+                   GROUP_CONCAT(DISTINCT tickets.consent_id) as consents,
+                   GROUP_CONCAT(code)                        as codes
+            FROM tickets
+                     INNER JOIN customers ON customers.id = tickets.customer_id
+                     INNER JOIN consents ON consents.id = tickets.consent_id
+            WHERE consent_id IS NOT NULL
+              AND code IS NOT NULL
+              AND consents.code_sent = 0
+            GROUP BY tickets.customer_id`;
+
+    if (count) {
+        return 'SELECT COUNT(customer_id) as count FROM (q)';
+    }
+
+    q += ` ORDER BY tickets.customer_id LIMIT ${limit} OFFSET ${offset}`;
+    return q;
+}
+
+function markConsentAsCodeSent() {
+    return "UPDATE `consents` SET `code_sent` = 1,`code_sent_at` = CURRENT_TIMESTAMP WHERE id = ?";
+}
+
 module.exports = {
     getCustomerByIdQuery: getCustomerByIdQuery,
     getCustomerByEmailQuery: getCustomerByEmailQuery,
@@ -367,4 +426,11 @@ module.exports = {
     setEmailDeliveredQuery: setEmailDeliveredQuery,
     setEmailOpenQuery: setEmailOpenQuery,
     setTicketsConsentQuery: setTicketsConsentQuery,
+    getTicketsIdWithoutCodes: getTicketsIdWithoutCodes,
+    truncateTemporaryTable: truncateTemporaryTable,
+    fillTemporaryTable: fillTemporaryTable,
+    fillCodesToTickets: fillCodesToTickets,
+    getCodesToSend: getCodesToSend,
+    getCodesToSendCount: getCodesToSendCount,
+    markConsentAsCodeSent: markConsentAsCodeSent,
 }

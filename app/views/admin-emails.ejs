@@ -16,9 +16,13 @@
                         value="<%=emailTemplateConsentPdf%>">
                     <%=emailTemplateNames[emailTemplateConsentPdf]%>
                 </option>
+                <option <%=template === emailTemplateCodes ? 'selected' : ''%>
+                        value="<%=emailTemplateCodes%>">
+                    <%=emailTemplateNames[emailTemplateCodes]%>
+                </option>
             </select>
 
-            <label class="my-1 mr-2" for="isOpen">Доставлено</label>
+            <label class="my-1 mr-2" for="isDelivered">Доставлено</label>
             <select class="custom-select my-1 mr-sm-2" id="isDelivered" name="isDelivered">
                 <option <%=isDelivered === 0 ? 'selected' : ''%> value="0">...</option>
                 <option <%=isDelivered === 1 ? 'selected' : ''%> value="1">Нет</option>

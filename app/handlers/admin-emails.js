@@ -7,7 +7,7 @@ const {getEmailsQuery, getEmailsCountQuery} = require('../db/queries')
 const menu = require('../admin-menu');
 const pagePath = require('../utils/page-path');
 
-module.exports = async (ctx, next) => {
+module.exports = async (ctx) => {
 
     ctx.state.title = 'Отчет по письмам';
     ctx.state.menu = menu;
@@ -66,7 +66,8 @@ module.exports = async (ctx, next) => {
 
     const emailTemplateNames = {};
     emailTemplateNames[config.emailTemplateConsentRequest] = 'Запрос согласия';
-    emailTemplateNames[config.emailTemplateConsentPdf] = 'Отправка PDF';
+    emailTemplateNames[config.emailTemplateConsentPdf] = 'Отправка PDF с согласием';
+    emailTemplateNames[config.emailTemplateCodes] = 'Отправка кодов активации';
 
     return ctx.render(template, {
         emails: result,
@@ -83,6 +84,7 @@ module.exports = async (ctx, next) => {
         isDelivered: isDelivered,
         emailTemplateConsentRequest: config.emailTemplateConsentRequest,
         emailTemplateConsentPdf: config.emailTemplateConsentPdf,
+        emailTemplateCodes: config.emailTemplateCodes,
         emailTemplateNames: emailTemplateNames,
         hasFilters: filter_query.length > 0,
     })
