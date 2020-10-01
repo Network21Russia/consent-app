@@ -31,7 +31,7 @@ module.exports = async (ctx, next) => {
         const params = [config.emailTemplateConsentRequest];
         const filter = {
             email_template: true,
-            with_rest: true
+            without_consent: true
         };
 
         if (hash) {
