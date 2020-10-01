@@ -132,11 +132,11 @@ async function sendConsentLetter(ctx, db, offset, itemsOnPage, hash) {
     const batch = [];
     const emailToCustomerId = {};
 
-    const params = [config.emailTemplateConsentRequest];
-    const filter = {
-        email_template: true,
-        with_rest: true
-    };
+        const params = [config.emailTemplateConsentRequest];
+        const filter = {
+            email_template: true,
+            without_consent: true
+        };
 
     if (hash) {
         filter.hash = true;
