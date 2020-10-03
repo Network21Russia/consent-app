@@ -6,10 +6,12 @@ const DatabaseConnection = require('mysql-flexi-promise');
 const config = require('../../config/config');
 const {
     getCustomersQuery, getCustomersCountQuery, insertEmailQuery, getTicketsIdWithoutCodes, getCodesToSend,
-    getCodesToSendCount
+    getCodesToSendCount, markConsentAsCodeSent
 } = require('../db/queries')
 const menu = require('../admin-menu');
 const {genderify, isMale, isFemale} = require('../utils/genderify');
+const declension = require('../utils/declension');
+const formatMoney = require('../utils/format-money');
 
 module.exports = async (ctx) => {
 
@@ -39,6 +41,8 @@ module.exports = async (ctx) => {
         let count
 
         if (letter_type === 'consent') {
+            count = await sendConsentLetter(ctx, db, offset, itemsOnPage, hash);
+        } else if (letter_type === 'code') {
             const idsWithConsents = await db.executeQuery(getTicketsIdWithoutCodes(true));
 
             if (idsWithConsents.length) {
@@ -50,8 +54,6 @@ module.exports = async (ctx) => {
                 })
             }
 
-            count = await sendConsentLetter(ctx, db, offset, itemsOnPage, hash);
-        } else if (letter_type === 'code') {
             count = await sendCodeLetter(ctx, db, offset, itemsOnPage);
         } else {
             ctx.throw(500);
@@ -87,10 +89,47 @@ async function sendCodeLetter(ctx, db, offset, itemsOnPage) {
     const emailToConsentsId = {};
 
     for (const customer of codesToSend) {
-        emailToCustomerId[customer.email] = customer.id;
-        emailToConsentsId[customer.email] = customer.consents.split(',');
+        let consents = [];
+        let totalAmount = 0;
+        let totalTickets = 0;
+        const orders = Object.create(null);
+        const codes = [];
+
+        const data = JSON.parse(customer.data);
+
+        for (let item of data) {
+            consents.push(item.consent_id);
+
+            codes.push(item.code);
+
+            totalTickets++;
+            totalAmount += item.amount;
+
+            orders[item.order_number] = orders[item.order_number] || {
+                order_number: item.order_number,
+                order_date: item.order_date,
+                amount: 0,
+                count: 0,
+            };
+
+            orders[item.order_number].count++;
+            orders[item.order_number].amount += item.amount;
+        }
+
+        consents = Array.from(new Set(consents));
+
+        const ordersData = Object.values(orders).map(order => {
+            order.formattedAmount = formatMoney(order.amount, 0, 3, ' ', ',').trim();
+            order.countDeclensed = declension(order.count, "билет", "билета", "билетов", {delimiter: ' '});
+            return order;
+        });
+
+        emailToCustomerId[customer.email] = customer.customer_id;
+        emailToConsentsId[customer.email] = consents;
+
         batch.push({
             TemplateId: config.emailTemplateCodes,
+            TrackLinks: 'none',
             From: config.emailSenderFrom,
             To: customer.email,
             TemplateModel: {
@@ -99,7 +138,15 @@ async function sendCodeLetter(ctx, db, offset, itemsOnPage) {
                 genderMale: isMale(customer.gender),
                 genderFemale: isFemale(customer.gender),
                 greeting: genderify(customer.gender, 'Уважаемый', 'Уважаемая'),
-                codes: customer.codes.split(','),
+                ordersData: ordersData,
+                consentsDeclensed: declension(consents.length, "соглашение", "соглашения", "соглашений", {delimiter: ' '}),
+                codes: codes.map((code, idx) => {
+                    return {index: idx+1, code: code}
+                }),
+                codesDeclensed: declension(codes.length, "код", "кода", "кодов", {delimiter: ' '}),
+                totalTickets: totalTickets,
+                totalTicketsDeclensed: declension(totalTickets, "штука", "штуки", "штук", {delimiter: ' '}),
+                formattedTotalAmount: formatMoney(totalAmount, 0, 3, ' ', ',').trim(),
             },
         });
     }
@@ -115,7 +162,7 @@ async function sendCodeLetter(ctx, db, offset, itemsOnPage) {
         }
 
         await db.executeQuery(queryInsertEmail, [r.MessageID, emailToCustomerId[r.To], config.emailTemplateCodes]);
-        for (consentId of emailToConsentsId[r.To]) {
+        for (let consentId of emailToConsentsId[r.To]) {
             await db.executeQuery(queryMarkConsent, [consentId]);
         }
     }

@@ -35,7 +35,8 @@
                     <th class="align-middle" scope="col">Цена</th>
                     <th class="align-middle" scope="col">Заказ</th>
                     <th class="align-middle" scope="col">Дата заказа</th>
-                    <th class="align-middle" scope="col">Включен в согласие</th>
+                    <th class="align-middle" scope="col">Включен<br/>в согласие</th>
+                    <th class="align-middle" scope="col">Код</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -52,8 +53,7 @@
                             </a>
                         </td>
                         <td class="align-middle"><%= ticket.amount %></td>
-                        <td class="align-middle text-center">
-                            <%=ticket.order_number%>
+                        <td class="align-middle text-center"><%=ticket.order_number%></td>
                         <td class="align-middle text-center"><%=formatDate(ticket.order_date) %></td>
                         <td class="align-middle text-center">
                             <% if(ticket.consent_id) { %>
@@ -65,6 +65,7 @@
                                 нет
                             <% } %>
                         </td>
+                        <td class="align-middle text-center"><%=ticket.code%></td>
                     </tr>
                 <% }); %>
                 </tbody>

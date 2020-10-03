@@ -104,7 +104,7 @@
                     </td>
                     <td class="align-middle text-center text-nowrap">
                         <% if(customer.rest_tickets > 0) { %>
-                        <a href="/admin/send/<%= customer.url_hash %>?started=1" title="Отправить повторно"
+                        <a href="/admin/send/<%= customer.url_hash %>?letter_type=consent&started=1" title="Отправить повторно"
                            class="btn btn-warning btn-sm">
                             <i class="icon send"></i>
                         </a>

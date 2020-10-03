@@ -7,7 +7,7 @@ const {getCustomersQuery, getCustomersCountQuery} = require('../db/queries')
 const menu = require('../admin-menu');
 const pagePath = require('../utils/page-path');
 
-module.exports = async (ctx, next) => {
+module.exports = async (ctx) => {
 
     ctx.state.title = 'Отчет по покупателям';
     ctx.state.menu = menu;
@@ -75,7 +75,7 @@ module.exports = async (ctx, next) => {
     }
 
     query = getCustomersCountQuery(filter);
-    console.log('blah2', query);
+
     const count = await db.executeQuery(query, params);
     if (!(Array.isArray(count))) {
         ctx.throw(500);

@@ -380,24 +380,31 @@ function _getCodesToSend(count = false, limit, offset) {
     limit = limit || 10;
     offset = offset || 0;
 
-    let q = `SELECT tickets.customer_id, 
-                   email,
-                   name,
-                   surname,
-                   patronimic,
-                   gender,
-                   GROUP_CONCAT(DISTINCT tickets.consent_id) as consents,
-                   GROUP_CONCAT(code)                        as codes
-            FROM tickets
-                     INNER JOIN customers ON customers.id = tickets.customer_id
-                     INNER JOIN consents ON consents.id = tickets.consent_id
-            WHERE consent_id IS NOT NULL
-              AND code IS NOT NULL
-              AND consents.code_sent = 0
-            GROUP BY tickets.customer_id`;
+    let q = `SELECT tickets.customer_id,
+                    email,
+                    name,
+                    surname,
+                    patronimic,
+                    gender,
+                    JSON_ARRAYAGG(
+                            JSON_OBJECT(
+                                    'consent_id', tickets.consent_id,
+                                    'code', tickets.code,
+                                    'order_number', tickets.order_number,
+                                    'order_date', tickets.order_date,
+                                    'amount', tickets.amount
+                                )
+                        ) AS data
+             FROM tickets
+                      INNER JOIN customers ON customers.id = tickets.customer_id
+                      INNER JOIN consents ON consents.id = tickets.consent_id
+             WHERE consent_id IS NOT NULL
+               AND code IS NOT NULL
+               AND consents.code_sent = 0
+             GROUP BY tickets.customer_id`;
 
     if (count) {
-        return 'SELECT COUNT(customer_id) as count FROM (q)';
+        return `SELECT COUNT(customer_id) as count FROM (${q}) t`;
     }
 
     q += ` ORDER BY tickets.customer_id LIMIT ${limit} OFFSET ${offset}`;
