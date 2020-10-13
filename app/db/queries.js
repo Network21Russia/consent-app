@@ -176,7 +176,7 @@ function _getConsentsQuery(filter = {}, count = false, limit = 10, offset = 0) {
     result.push(') t');
 
     if (!count) {
-        result.push('ORDER BY signed_surname, signed_name, signed_patronimic, id');
+        result.push('ORDER BY id');
         result.push(`LIMIT ${limit} OFFSET ${offset}`);
     }
 
