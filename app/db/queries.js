@@ -398,7 +398,7 @@ function _getCodesToSend(count = false, limit, offset) {
                       INNER JOIN consents ON consents.id = tickets.consent_id
              WHERE consent_id IS NOT NULL
                AND code IS NOT NULL
-               AND consents.code_sent = 2
+               AND consents.code_sent = 0
              GROUP BY tickets.customer_id`;
 
     if (count) {
