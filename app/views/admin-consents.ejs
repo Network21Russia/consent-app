@@ -21,7 +21,7 @@
                 <tbody>
                 <% consents.forEach( function(consent) { %>
                     <tr>
-                        <td class="align-middle"><%= consent.id %></td>
+                        <td class="align-middle"><%= 1 + ((consent.id / 10).toFixed(0) * 1) %></td>
                         <td class="align-middle"><%= consent.signed_surname %></td>
                         <td class="align-middle"><%= consent.signed_name %></td>
                         <!--<td class="align-middle"><%= consent.signed_patronimic %></td>-->
