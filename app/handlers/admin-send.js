@@ -82,6 +82,9 @@ module.exports = async (ctx) => {
 };
 
 async function sendCodeLetter(ctx, db, offset, itemsOnPage) {
+    db.pool.on('connection', function (connection) {
+        connection.query('SET SESSION group_concat_max_len = 10000000')
+    });
     const codesToSend = await db.executeQuery(getCodesToSend(itemsOnPage, offset * itemsOnPage));
 
     const batch = [];
@@ -95,7 +98,7 @@ async function sendCodeLetter(ctx, db, offset, itemsOnPage) {
         const orders = Object.create(null);
         const codes = [];
 
-        const data = JSON.parse(customer.data);
+        const data = JSON.parse('[' + customer.data + ']');
 
         for (let item of data) {
             consents.push(item.consent_id);

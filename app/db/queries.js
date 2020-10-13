@@ -386,14 +386,12 @@ function _getCodesToSend(count = false, limit, offset) {
                     surname,
                     patronimic,
                     gender,
-                    JSON_ARRAYAGG(
-                            JSON_OBJECT(
-                                    'consent_id', tickets.consent_id,
-                                    'code', tickets.code,
-                                    'order_number', tickets.order_number,
-                                    'order_date', tickets.order_date,
-                                    'amount', tickets.amount
-                                )
+                    GROUP_CONCAT(
+                            CONCAT('{"consent_id":', tickets.consent_id,
+                                   ',"code":"', tickets.code,
+                                   '","order_number":', tickets.order_number,
+                                   ',"order_date":"', tickets.order_date,
+                                   '","amount":', tickets.amount, '}')
                         ) AS data
              FROM tickets
                       INNER JOIN customers ON customers.id = tickets.customer_id
