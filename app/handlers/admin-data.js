@@ -2,15 +2,16 @@
 
 const fs = require('fs');
 const path = require('path');
-const csv = require('fast-csv');
 const crypto = require('crypto');
-const iconv = require('iconv-lite');
+const cheerio = require('cheerio');
+const xlsx = require('node-xlsx').default;
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
 const {
     insertCustomerQuery, getCustomerByEmailQuery, insertTicketsQuery, getTicketsIdWithoutCodes, truncateTemporaryTable,
-    fillTemporaryTable, fillCodesToTickets } = require('../db/queries')
+    fillTemporaryTable, fillCodesToTickets, getTicketsQuery, getTicketsCodes
+} = require('../db/queries')
 const menu = require('../admin-menu');
 const pagePath = require('../utils/page-path');
 
@@ -21,6 +22,48 @@ const delimetersNames = {
     ';': 'точка с запятой',
 }
 
+const surnameCompletions = {
+    female: ['ова', 'ева', 'ина', 'ая', 'яя', 'екая', 'цкая'],
+    male: ['ов', 'ев', 'ин', 'ын', 'ой', 'цкий', 'ский', 'цкой', 'ской']
+}
+
+function getGender(dict, name, surname) {
+
+    const nameLc = name.toLowerCase();
+    const surnameLc = surname.toLowerCase();
+
+    if (dict.hasOwnProperty(nameLc)) {
+        return dict.hasOwnProperty(nameLc)
+    }
+    // fallback на случай если в таблице перепутаны местами имя и фамилия
+    if (dict.hasOwnProperty(surnameLc)) {
+        return dict.hasOwnProperty(surnameLc)
+    }
+
+    for (let gender of Object.keys(surnameCompletions)) {
+        for (let suffix of surnameCompletions[gender]) {
+            if (surnameLc.endsWith(suffix)) {
+                return gender
+            }
+        }
+    }
+
+    for (let gender of Object.keys(surnameCompletions)) {
+        for (let suffix of surnameCompletions[gender]) {
+            if (nameLc.endsWith(suffix)) {
+                return gender
+            }
+        }
+    }
+
+    console.log('blah', name, surname)
+
+    // по статистике прошлых заказов, 60% покупателей билетов - женщины
+    // поэтому если не удалось определить пол никаким способом, то возвращаем по умолчанию женский
+    return 'female'
+}
+
+
 module.exports = async (ctx) => {
 
     ctx.state.title = 'Данные';
@@ -30,6 +73,8 @@ module.exports = async (ctx) => {
     const template = 'admin-data';
 
     let parsedRowsCount = 0;
+    let addedOrdersCount = 0;
+    let addedCodesCount = 0;
     let uploadSuccess = null;
     let resetSuccess = null;
 
@@ -37,9 +82,9 @@ module.exports = async (ctx) => {
 
         const db = DatabaseConnection.getInstance(config.db);
 
-        try {
+        await db.executeQuery("START TRANSACTION");
 
-            await db.executeQuery("START TRANSACTION");
+        try {
 
             if (ctx.request.body.reset && ctx.request.body.reset === '1') {
 
@@ -52,7 +97,7 @@ module.exports = async (ctx) => {
 
                 for (let table of tables) {
                     const tableName = table[Object.keys(table)[0]];
-                    if (tableName === 'migrations') {
+                    if (tableName === 'migrations' || tableName === 'names-to-gender') {
                         continue;
                     }
                     if (tables_ordered.indexOf(tableName) < 0) {
@@ -66,87 +111,110 @@ module.exports = async (ctx) => {
                 }
 
                 await db.executeQuery("SET FOREIGN_KEY_CHECKS = 1;");
-                await db.executeQuery("COMMIT");
                 resetSuccess = true;
 
             } else if (ctx.request.files && ctx.request.files.file) {
 
-                uploadSuccess = false;
-
-                let delimiter = ctx.request.body.delimiter || allowedDelimiters[0];
-                if (allowedDelimiters.indexOf(delimiter) < 0) {
-                    delimiter = allowedDelimiters[0]
-                }
-
-                let charset = ctx.request.body.delimiter || allowedCharsets[0];
-                if (allowedCharsets.indexOf(charset) < 0) {
-                    charset = allowedCharsets[0]
-                }
-
-                const parserOptions = {
-                    delimiter: delimiter
-                }
-
-                const rows = [];
-
-                await new Promise((resolve, reject) => {
-                    fs.createReadStream(path.resolve(ctx.request.files.file.path))
-                        .pipe(iconv.decodeStream(charset))
-                        .pipe(iconv.encodeStream('utf8'))
-                        .pipe(csv.parse(parserOptions))
-                        .on('error', e => {
-                            reject(e);
-                        })
-                        .on('data', async (row) => {
-                            rows.push(row);
-                        })
-                        .on('end', async (rowCount) => {
-                            ctx.log.info(`Parsed ${rowCount} rows`);
-                            resolve()
-                        })
-                });
-
-                parsedRowsCount = rows.length
-
                 if (ctx.request.body.content && ctx.request.body.content === 'codes') {
+                    uploadSuccess = false;
+
+                    const workSheetsFromBuffer = xlsx.parse(fs.readFileSync(path.resolve(ctx.request.files.file.path)));
+
+                    const rows = workSheetsFromBuffer["0"].data.slice(6).map(i => i[0])
+
+                    parsedRowsCount = rows.length
+
                     const idsWithConsents = await db.executeQuery(getTicketsIdWithoutCodes(true));
                     const idsWithoutConsents = await db.executeQuery(getTicketsIdWithoutCodes(false));
+                    const usedCodes = (await db.executeQuery(getTicketsCodes())).map(uc => uc.code);
 
                     const ids = [].concat(idsWithConsents, idsWithoutConsents)
 
-                    const limit = Math.min(parsedRowsCount, ids.length);
+                    const values = [];
+                    const totalIds = ids.length
+                    if (totalIds) {
+                        let cnt = 0;
+                        for (let i = 0; i < rows.length; i++) {
+                            if (usedCodes.indexOf(rows[i]) >= 0) {
+                                continue
+                            }
 
-                    if (limit > 0) {
-                        const values = [];
-
-                        for (let i = 0; i < limit; i++) {
-                            values.push([ids[i].id, rows[i][0]]);
+                            values.push([ids[cnt].id, rows[i]]);
+                            cnt++;
+                            if (cnt >= totalIds) {
+                                break
+                            }
                         }
 
-                        await db.executeQuery(truncateTemporaryTable());
-                        await db.executeQuery(fillTemporaryTable(), [values]);
-                        await db.executeQuery(fillCodesToTickets());
-                        await db.executeQuery(truncateTemporaryTable());
+                        addedCodesCount = values.length
+                        if (addedCodesCount) {
+                            await db.executeQuery(truncateTemporaryTable());
+                            await db.executeQuery(fillTemporaryTable(), [values]);
+                            await db.executeQuery(fillCodesToTickets());
+                            await db.executeQuery(truncateTemporaryTable());
+                            uploadSuccess = true;
+                        } else {
+                            uploadSuccess = false;
+                        }
+                    } else {
+                        uploadSuccess = true;
                     }
-
                 } else {
+
+                    const result = await db.executeQuery("SELECT * FROM `names-to-gender`", []);
+                    const nameToGender = result.reduce(function (accumulator, current) {
+                        accumulator[current.name] = current.gender
+                        return accumulator;
+                    }, {});
+
+                    const rows = []
+
+                    const $ = cheerio.load((fs.readFileSync(path.resolve(ctx.request.files.file.path)) + '').split('<!DOCTYPE').shift());
+
+                    $('body > table tr:nth-child(3) td table tr:not(:first-child)').each(function () {
+                        const row = {}
+                        $('td', this).each(function (i) {
+                            row[i] = $(this).text().trim();
+                        });
+                        rows.push(row)
+                    });
+
+                    parsedRowsCount = rows.length
+
+                    await db.executeQuery("START TRANSACTION");
 
                     for (let row of rows) {
                         try {
+                            const orderId = row[0].trim()
 
-                            const email = row[7];
+                            const ticketsFilter = {order_number: true};
+                            const query = getTicketsQuery(ticketsFilter, -1, 0);
+                            const tickets = await db.executeQuery(query, [orderId]);
+
+                            if (Array.isArray(tickets) && tickets.length > 0) {
+                                continue;
+                            }
+
+                            const orderDate = row[1].trim()
+                            const ticketsCount = +row[9].trim()
+                            const ticketsPrice = +row[10].trim()
+                            const name = row[27].trim()
+                            const surname = row[28].trim()
+                            const gender = getGender(nameToGender, name, surname);
+                            const email = row[29].trim()
+
                             const hash = crypto.createHash('md5').update(email + config.hashSecret).digest("hex");
                             const params = [
-                                row[7],
-                                row[4],
-                                row[5],
+                                email,
+                                name,
+                                surname,
                                 null,
-                                row[6],
+                                gender,
                                 hash,
-                                row[4],
-                                row[5],
+                                name,
+                                surname,
                                 null,
-                                row[6],
+                                gender,
                             ]
 
                             const upsertResult = await db.executeQuery(insertCustomerQuery(), params);
@@ -154,18 +222,16 @@ module.exports = async (ctx) => {
                             let customerId = upsertResult.insertId || 0;
 
                             if (!customerId) {
-                                const result = await db.executeQuery(getCustomerByEmailQuery(), [row[7]]);
+                                const result = await db.executeQuery(getCustomerByEmailQuery(), [email]);
                                 if (Array.isArray(result) && result.length) {
                                     customerId = result[0].id
                                 }
                             }
 
                             if (customerId) {
-
-                                const ticketsCount = row[2] * 1;
-                                const amount = row[3] * 1;
-                                const order_number = row[0] * 1;
-                                const date = new Date(row[1]);
+                                const amount = +ticketsPrice;
+                                const order_number = +orderId;
+                                const date = new Date(orderDate);
 
                                 const ticketParams = [customerId, order_number, date, amount]
                                 const params = []
@@ -175,24 +241,26 @@ module.exports = async (ctx) => {
                                 }
 
                                 await db.executeQuery(insertTicketsQuery(), [params]);
+                                addedOrdersCount++
                             }
                         } catch (e) {
                             // noinspection ExceptionCaughtLocallyJS
                             throw e;
                         }
                     }
-
+                    uploadSuccess = true;
                 }
-
-                await db.executeQuery("COMMIT");
-                uploadSuccess = true;
             }
-
-        } catch (e) {
+        } catch
+            (e) {
             ctx.log.error(e);
             ctx.log.error('rolling back transaction');
             await db.executeQuery("ROLLBACK");
             ctx.throw(500)
+        }
+
+        if (uploadSuccess || resetSuccess) {
+            await db.executeQuery("COMMIT");
         }
     }
 
@@ -202,9 +270,13 @@ module.exports = async (ctx) => {
         allowedCharsets: allowedCharsets,
         delimetersNames: delimetersNames,
         parsedRowsCount: parsedRowsCount,
+        addedOrdersCount: addedOrdersCount,
+        addedCodesCount: addedCodesCount,
+        content: ctx.request.body ? ctx.request.body.content : '',
         resetSuccess: resetSuccess,
         uploadSuccess: uploadSuccess,
         formAction: pagePath(ctx.state.activeMenu, null),
     })
 
-};
+}
+;

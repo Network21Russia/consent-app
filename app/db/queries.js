@@ -257,6 +257,10 @@ function _getTicketsQuery(filter = {}, count = false, limit = 10, offset = 0) {
         where_conditions.push('customer_id = ?');
     }
 
+    if (filter.order_number) {
+        where_conditions.push('order_number = ?');
+    }
+
     if (filter.has_consent) {
         where_conditions.push("NOT ISNULL(consent_id)");
     } else if (filter.has_no_consent) {
@@ -353,6 +357,10 @@ function getTicketsIdWithoutCodes(withConsents = true) {
     return "SELECT id FROM tickets WHERE code IS NULL AND consent_id " + (withConsents ? "IS NOT NULL" : "IS NULL");
 }
 
+function getTicketsCodes() {
+    return "SELECT code FROM tickets WHERE code IS NOT NULL";
+}
+
 function truncateTemporaryTable() {
     return "TRUNCATE TABLE codes_tmp";
 }
@@ -432,6 +440,7 @@ module.exports = {
     setEmailOpenQuery: setEmailOpenQuery,
     setTicketsConsentQuery: setTicketsConsentQuery,
     getTicketsIdWithoutCodes: getTicketsIdWithoutCodes,
+    getTicketsCodes: getTicketsCodes,
     truncateTemporaryTable: truncateTemporaryTable,
     fillTemporaryTable: fillTemporaryTable,
     fillCodesToTickets: fillCodesToTickets,

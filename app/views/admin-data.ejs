@@ -14,7 +14,14 @@
         <% } %>
         <% if(uploadSuccess === true) { %>
             <div class="my-4 bg-success text-white p-2">Загрузка данных завершена успешно,
-                обработано <%=parsedRowsCount%> строк.</div>
+                обработано <%=parsedRowsCount%> строк.
+                <% if(content === 'data') { %>
+                    Добавлено <%=addedOrdersCount%> заказов.
+                <% } %>
+                <% if(content === 'codes') { %>
+                Добавлено <%=addedCodesCount%> кодов.
+                <% } %>
+            </div>
         <% } %>
     </div>
 </div>
@@ -25,39 +32,13 @@
         <h2>Загрузка данных</h2>
 
         <form method="post" action="<%= formAction %>" class="my-4" enctype="multipart/form-data">
+            <input type="hidden" name="content" value="data"/>
+            <div>Загрузка данных из файла в формате Excel (отчет WES Paid Order Report)</div>
 
-            <div>Загрузка данных из файла в формате CSV со следующей структурой:</div>
-            <pre class="small">номер_заказа,дата_заказа,кол-во_билетов,цена_билета,имя,фамилия,пол,e-mail</pre>
-            <div>Например:</div>
-            <pre class="small">1100024175,02/29/2020,1,3700,Василий,Пупкин,male,test@test.com</pre>
             <hr/>
 
             <div class="form-group">
-                <input type="file" class="form-control-file" name="file" accept="text/csv, .csv">
-            </div>
-
-            <div class="form-group">
-                <label class="pr-2">Разделители:</label>
-                <% allowedDelimiters.forEach( function(delimiter, index) { %>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="delimiter" id="divder<%=index%>" value="<%=delimiter%>"
-                            <%= index === 0 ? 'checked' : ''%>>
-                    <label class="form-check-label" for="divder<%=index%>">
-                        <%= delimetersNames[delimiter] || delimiter %>
-                    </label>
-                </div>
-                <% }); %>
-            </div>
-
-            <div class="form-group">
-                <label class="pr-2">Кодировка:</label>
-                <% allowedCharsets.forEach( function(charset, index) { %>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="charset" id="charset<%=index%>" value="<%=charset%>"
-                            <%= index === 0 ? 'checked' : ''%>>
-                    <label class="form-check-label" for="charset<%=index%>"><%=charset%></label>
-                </div>
-                <% }); %>
+                <input type="file" class="form-control-file" name="file" accept="application/vnd.ms-excel, .xls">
             </div>
 
             <div>
@@ -71,38 +52,11 @@
         <form method="post" action="<%= formAction %>" class="my-4" enctype="multipart/form-data">
             <input type="hidden" name="content" value="codes"/>
 
-            <div>Загрузка данных из файла в формате CSV со следующей структурой:</div>
-            <pre class="small">код_доступа</pre>
-            <div>Например:</div>
-            <pre class="small">AB12-34CD-XYZ0</pre>
+            <div>Загрузка кодов доступа из файла в формате Excel</div>
             <hr/>
 
             <div class="form-group">
-                <input type="file" class="form-control-file" name="file" accept="text/csv, .csv">
-            </div>
-
-            <div class="form-group">
-                <label class="pr-2">Разделители:</label>
-                <% allowedDelimiters.forEach( function(delimiter, index) { %>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="delimiter" id="divder<%=index%>" value="<%=delimiter%>"
-                            <%= index === 0 ? 'checked' : ''%>>
-                    <label class="form-check-label" for="divder<%=index%>">
-                        <%= delimetersNames[delimiter] || delimiter %>
-                    </label>
-                </div>
-                <% }); %>
-            </div>
-
-            <div class="form-group">
-                <label class="pr-2">Кодировка:</label>
-                <% allowedCharsets.forEach( function(charset, index) { %>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="charset" id="charset<%=index%>" value="<%=charset%>"
-                            <%= index === 0 ? 'checked' : ''%>>
-                    <label class="form-check-label" for="charset<%=index%>"><%=charset%></label>
-                </div>
-                <% }); %>
+                <input type="file" class="form-control-file" name="file" accept="application/vnd.ms-excel, .xlsx">
             </div>
 
             <div>
