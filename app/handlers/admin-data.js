@@ -4,14 +4,16 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const cheerio = require('cheerio');
+const postmark = require("postmark");
 const xlsx = require('node-xlsx').default;
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
 const {
     insertCustomerQuery, getCustomerByEmailQuery, insertTicketsQuery, getTicketsIdWithoutCodes, truncateTemporaryTable,
-    fillTemporaryTable, fillCodesToTickets, getTicketsQuery, getTicketsCodes
+    fillTemporaryTable, fillCodesToTickets, getTicketsQuery, getTicketsCodes, filterNewCustomers, insertEmailQuery
 } = require('../db/queries')
+const {genderify, isMale, isFemale} = require('../utils/genderify');
 const menu = require('../admin-menu');
 const pagePath = require('../utils/page-path');
 
@@ -75,12 +77,15 @@ module.exports = async (ctx) => {
     let parsedRowsCount = 0;
     let addedOrdersCount = 0;
     let addedCodesCount = 0;
+    let lettersSendCount = 0;
     let uploadSuccess = null;
     let resetSuccess = null;
 
-    if (ctx.request.method === 'POST') {
+    const db = DatabaseConnection.getInstance(config.db);
 
-        const db = DatabaseConnection.getInstance(config.db);
+    // const hasCustomers = (await db.executeQuery("SELECT COUNT(id) AS cnt FROM customers"))[0].cnt > 0;
+
+    if (ctx.request.method === 'POST') {
 
         await db.executeQuery("START TRANSACTION");
 
@@ -111,6 +116,7 @@ module.exports = async (ctx) => {
                 }
 
                 await db.executeQuery("SET FOREIGN_KEY_CHECKS = 1;");
+                await db.executeQuery("COMMIT");
                 resetSuccess = true;
 
             } else if (ctx.request.files && ctx.request.files.file) {
@@ -152,6 +158,7 @@ module.exports = async (ctx) => {
                             await db.executeQuery(fillTemporaryTable(), [values]);
                             await db.executeQuery(fillCodesToTickets());
                             await db.executeQuery(truncateTemporaryTable());
+                            await db.executeQuery("COMMIT");
                             uploadSuccess = true;
                         } else {
                             uploadSuccess = false;
@@ -160,6 +167,10 @@ module.exports = async (ctx) => {
                         uploadSuccess = true;
                     }
                 } else {
+
+                    const sendCustomersLetters = !!ctx.request.body.send;
+
+                    const newCustomerIds = [];
 
                     const result = await db.executeQuery("SELECT * FROM `names-to-gender`", []);
                     const nameToGender = result.reduce(function (accumulator, current) {
@@ -180,8 +191,6 @@ module.exports = async (ctx) => {
                     });
 
                     parsedRowsCount = rows.length
-
-                    await db.executeQuery("START TRANSACTION");
 
                     for (let row of rows) {
                         try {
@@ -242,13 +251,62 @@ module.exports = async (ctx) => {
 
                                 await db.executeQuery(insertTicketsQuery(), [params]);
                                 addedOrdersCount++
+                                newCustomerIds.push(customerId)
+
                             }
                         } catch (e) {
                             // noinspection ExceptionCaughtLocallyJS
                             throw e;
                         }
                     }
+                    await db.executeQuery("COMMIT");
                     uploadSuccess = true;
+
+                    if (sendCustomersLetters && newCustomerIds.length) {
+                        const customers = await db.executeQuery(filterNewCustomers(), [config.emailTemplateConsentRequest, newCustomerIds]);
+
+                        if (customers.length) {
+
+                            const batch = [];
+                            const emailToCustomerId = {};
+
+                            for (const customer of customers) {
+                                emailToCustomerId[customer.email] = customer.id;
+                                batch.push({
+                                    TemplateId: config.emailTemplateConsentRequest,
+                                    From: config.emailSenderFrom,
+                                    To: customer.email,
+                                    TemplateModel: {
+                                        name: ([customer.name, customer.patronimic].filter(Boolean).join(' ')).trim(),
+                                        gender: customer.gender,
+                                        genderMale: isMale(customer.gender),
+                                        genderFemale: isFemale(customer.gender),
+                                        greeting: genderify(customer.gender, 'Уважаемый', 'Уважаемая'),
+                                        host: config.publicHost,
+                                        path: `/customer/${customer.url_hash}`,
+                                        url: `https://${config.publicHost}/customer/${customer.url_hash}`,
+                                    },
+                                });
+                            }
+
+                            const client = new postmark.ServerClient(config.emailPostmarkToken);
+                            const sendingResult = await client.sendEmailBatchWithTemplates(batch);
+
+                            await db.executeQuery("START TRANSACTION");
+
+                            const query = insertEmailQuery();
+                            for (const r of sendingResult) {
+                                if (r.ErrorCode) {
+                                    continue;
+                                }
+                                await db.executeQuery(query, [r.MessageID, emailToCustomerId[r.To], config.emailTemplateConsentRequest]);
+                                lettersSendCount++
+                            }
+
+                            await db.executeQuery("COMMIT");
+
+                        }
+                    }
                 }
             }
         } catch
@@ -259,9 +317,7 @@ module.exports = async (ctx) => {
             ctx.throw(500)
         }
 
-        if (uploadSuccess || resetSuccess) {
-            await db.executeQuery("COMMIT");
-        }
+
     }
 
     return ctx.render(template, {
@@ -272,9 +328,11 @@ module.exports = async (ctx) => {
         parsedRowsCount: parsedRowsCount,
         addedOrdersCount: addedOrdersCount,
         addedCodesCount: addedCodesCount,
+        lettersSendCount: lettersSendCount,
         content: ctx.request.body ? ctx.request.body.content : '',
         resetSuccess: resetSuccess,
         uploadSuccess: uploadSuccess,
+        // hasCustomers: hasCustomers,
         formAction: pagePath(ctx.state.activeMenu, null),
     })
 

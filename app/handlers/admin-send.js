@@ -224,11 +224,11 @@ async function sendConsentLetter(ctx, db, offset, itemsOnPage, hash) {
     const client = new postmark.ServerClient(config.emailPostmarkToken);
     const sendingResult = await client.sendEmailBatchWithTemplates(batch);
 
+    query = insertEmailQuery();
     for (const r of sendingResult) {
         if (r.ErrorCode) {
             continue;
         }
-        const query = insertEmailQuery();
         await db.executeQuery(query, [r.MessageID, emailToCustomerId[r.To], config.emailTemplateConsentRequest]);
     }
 

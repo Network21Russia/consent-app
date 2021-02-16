@@ -421,6 +421,18 @@ function markConsentAsCodeSent() {
     return "UPDATE `consents` SET `code_sent` = 1,`code_sent_at` = CURRENT_TIMESTAMP WHERE id = ?";
 }
 
+function filterNewCustomers() {
+    return `SELECT customers.id, email, name, surname, gender, HEX(hash) AS url_hash
+            FROM customers
+                     LEFT JOIN (SELECT customer_id, max(datetime) as datetime FROM emails
+                                WHERE template_id = ?
+                                GROUP BY customer_id) e on
+                customers.id = e.customer_id
+            WHERE customers.id IN (?)
+              AND (datetime IS NULL OR datetime < DATE_ADD(CURDATE(), INTERVAL -1 DAY))
+            GROUP BY customers.id`;
+}
+
 module.exports = {
     getCustomerByIdQuery: getCustomerByIdQuery,
     getCustomerByEmailQuery: getCustomerByEmailQuery,
@@ -447,4 +459,5 @@ module.exports = {
     getCodesToSend: getCodesToSend,
     getCodesToSendCount: getCodesToSendCount,
     markConsentAsCodeSent: markConsentAsCodeSent,
+    filterNewCustomers: filterNewCustomers,
 }

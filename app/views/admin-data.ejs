@@ -14,12 +14,13 @@
         <% } %>
         <% if(uploadSuccess === true) { %>
             <div class="my-4 bg-success text-white p-2">Загрузка данных завершена успешно,
-                обработано <%=parsedRowsCount%> строк.
+                <%- declension(parsedRowsCount, "обработана", "обработано", "обработано", {printCount: false}) %> <%- declension(parsedRowsCount, "строка", "строки", "строк") %>.
                 <% if(content === 'data') { %>
-                    Добавлено <%=addedOrdersCount%> заказов.
+                    <%- declension(addedOrdersCount, "Добавлен", "Добавлено", "Добавлено", {printCount: false}) %> <%- declension(addedOrdersCount, "заказ", "заказа", "заказов") %>.
+                    Отправлено <%- declension(lettersSendCount, "письмо", "письма", "писем") %>.
                 <% } %>
                 <% if(content === 'codes') { %>
-                Добавлено <%=addedCodesCount%> кодов.
+                    <%- declension(addedCodesCount, "Добавлен", "Добавлено", "Добавлено", {printCount: false}) %> <%- declension(addedCodesCount, "код", "кода", "кодов") %>.
                 <% } %>
             </div>
         <% } %>
@@ -39,6 +40,11 @@
 
             <div class="form-group">
                 <input type="file" class="form-control-file" name="file" accept="application/vnd.ms-excel, .xls">
+            </div>
+
+            <div class="form-group form-check small">
+                <input type="checkbox" class="form-check-input" name="send" checked id="sendCheck">
+                <label class="form-check-label" for="sendCheck">Разослать письма новым покупателям</label>
             </div>
 
             <div>
