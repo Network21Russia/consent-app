@@ -6,7 +6,11 @@
             <div class="my-4 bg-danger text-white p-2">Сброс данных завершился ошибкой.</div>
         <% } %>
         <% if(uploadSuccess === false) { %>
-            <div class="my-4 bg-danger text-white p-2">Загрузка данных завершилась ошибкой.</div>
+            <div class="my-4 bg-danger text-white p-2">Загрузка данных завершилась ошибкой.
+                <% if(content === 'data' && needMoreCodes) { %>
+                    Необходимо загрузить больше кодов доступа.
+                <% } %>
+            </div>
         <% } %>
 
         <% if(resetSuccess === true) { %>
@@ -71,7 +75,7 @@
         </form>
     </div>
 
-    <div class="col-6">
+    <div class="col-6 text-muted">
         <h2>Сброс данных</h2>
 
         <form method="post" action="<%= formAction %>" class="my-4" enctype="multipart/form-data">

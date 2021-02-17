@@ -330,7 +330,7 @@ function insertCustomerQuery() {
 }
 
 function insertTicketsQuery() {
-    return 'INSERT INTO `tickets`(`customer_id`, `order_number`, `order_date`, `amount`) VALUES ?';
+    return 'INSERT INTO `tickets`(`customer_id`, `order_number`, `order_date`, `amount`, `code`) VALUES ?';
 }
 
 function insertConsentQuery() {
@@ -353,27 +353,8 @@ function setTicketsConsentQuery() {
     return "UPDATE `tickets` SET `consent_id` = ? WHERE id IN (?)";
 }
 
-function getTicketsIdWithoutCodes(withConsents = true) {
-    return "SELECT id FROM tickets WHERE code IS NULL AND consent_id " + (withConsents ? "IS NOT NULL" : "IS NULL");
-}
-
-function getTicketsCodes() {
-    return "SELECT code FROM tickets WHERE code IS NOT NULL";
-}
-
-function truncateTemporaryTable() {
-    return "TRUNCATE TABLE codes_tmp";
-}
-
-function fillTemporaryTable() {
-    return 'INSERT INTO codes_tmp (id, code) VALUES ?';
-}
-
-function fillCodesToTickets() {
-    return `UPDATE tickets
-                LEFT JOIN codes_tmp ON tickets.id = codes_tmp.id
-            SET tickets.code = codes_tmp.code
-            WHERE tickets.code IS NULL`;
+function fillCodesTable() {
+    return 'INSERT INTO codes (code) VALUES ?';
 }
 
 function getCodesToSendCount() {
@@ -433,6 +414,11 @@ function filterNewCustomers() {
             GROUP BY customers.id`;
 }
 
+function getUnusedCodes() {
+    return "SELECT code FROM codes WHERE code NOT IN (SELECT code FROM tickets WHERE code IS NOT NULL) ORDER BY code DESC";
+}
+
+
 module.exports = {
     getCustomerByIdQuery: getCustomerByIdQuery,
     getCustomerByEmailQuery: getCustomerByEmailQuery,
@@ -451,13 +437,10 @@ module.exports = {
     setEmailDeliveredQuery: setEmailDeliveredQuery,
     setEmailOpenQuery: setEmailOpenQuery,
     setTicketsConsentQuery: setTicketsConsentQuery,
-    getTicketsIdWithoutCodes: getTicketsIdWithoutCodes,
-    getTicketsCodes: getTicketsCodes,
-    truncateTemporaryTable: truncateTemporaryTable,
-    fillTemporaryTable: fillTemporaryTable,
-    fillCodesToTickets: fillCodesToTickets,
+    fillCodesTable: fillCodesTable,
     getCodesToSend: getCodesToSend,
     getCodesToSendCount: getCodesToSendCount,
     markConsentAsCodeSent: markConsentAsCodeSent,
     filterNewCustomers: filterNewCustomers,
+    getUnusedCodes: getUnusedCodes,
 }

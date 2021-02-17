@@ -10,8 +10,8 @@ const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
 const {
-    insertCustomerQuery, getCustomerByEmailQuery, insertTicketsQuery, getTicketsIdWithoutCodes, truncateTemporaryTable,
-    fillTemporaryTable, fillCodesToTickets, getTicketsQuery, getTicketsCodes, filterNewCustomers, insertEmailQuery
+    insertCustomerQuery, getCustomerByEmailQuery, insertTicketsQuery, fillCodesTable, getTicketsQuery,
+    filterNewCustomers, insertEmailQuery, getUnusedCodes
 } = require('../db/queries')
 const {genderify, isMale, isFemale} = require('../utils/genderify');
 const menu = require('../admin-menu');
@@ -78,6 +78,7 @@ module.exports = async (ctx) => {
     let addedOrdersCount = 0;
     let addedCodesCount = 0;
     let lettersSendCount = 0;
+    let needMoreCodes = false;
     let uploadSuccess = null;
     let resetSuccess = null;
 
@@ -122,50 +123,19 @@ module.exports = async (ctx) => {
             } else if (ctx.request.files && ctx.request.files.file) {
 
                 if (ctx.request.body.content && ctx.request.body.content === 'codes') {
+
                     uploadSuccess = false;
 
                     const workSheetsFromBuffer = xlsx.parse(fs.readFileSync(path.resolve(ctx.request.files.file.path)));
 
-                    const rows = workSheetsFromBuffer["0"].data.slice(6).map(i => i[0])
+                    const rows = workSheetsFromBuffer["0"].data.slice(6).map(i => [i[0]])
 
-                    parsedRowsCount = rows.length
+                    addedCodesCount = rows.length;
 
-                    const idsWithConsents = await db.executeQuery(getTicketsIdWithoutCodes(true));
-                    const idsWithoutConsents = await db.executeQuery(getTicketsIdWithoutCodes(false));
-                    const usedCodes = (await db.executeQuery(getTicketsCodes())).map(uc => uc.code);
+                    await db.executeQuery(fillCodesTable(), [rows])
 
-                    const ids = [].concat(idsWithConsents, idsWithoutConsents)
+                    uploadSuccess = true;
 
-                    const values = [];
-                    const totalIds = ids.length
-                    if (totalIds) {
-                        let cnt = 0;
-                        for (let i = 0; i < rows.length; i++) {
-                            if (usedCodes.indexOf(rows[i]) >= 0) {
-                                continue
-                            }
-
-                            values.push([ids[cnt].id, rows[i]]);
-                            cnt++;
-                            if (cnt >= totalIds) {
-                                break
-                            }
-                        }
-
-                        addedCodesCount = values.length
-                        if (addedCodesCount) {
-                            await db.executeQuery(truncateTemporaryTable());
-                            await db.executeQuery(fillTemporaryTable(), [values]);
-                            await db.executeQuery(fillCodesToTickets());
-                            await db.executeQuery(truncateTemporaryTable());
-                            await db.executeQuery("COMMIT");
-                            uploadSuccess = true;
-                        } else {
-                            uploadSuccess = false;
-                        }
-                    } else {
-                        uploadSuccess = true;
-                    }
                 } else {
 
                     const sendCustomersLetters = !!ctx.request.body.send;
@@ -192,6 +162,9 @@ module.exports = async (ctx) => {
 
                     parsedRowsCount = rows.length
 
+                    const newRows = []
+                    let newCodesNeeded = 0;
+
                     for (let row of rows) {
                         try {
                             const orderId = row[0].trim()
@@ -203,64 +176,86 @@ module.exports = async (ctx) => {
                             if (Array.isArray(tickets) && tickets.length > 0) {
                                 continue;
                             }
-
-                            const orderDate = row[1].trim()
                             const ticketsCount = +row[9].trim()
-                            const ticketsPrice = +row[10].trim()
-                            const name = row[27].trim()
-                            const surname = row[28].trim()
-                            const gender = getGender(nameToGender, name, surname);
-                            const email = row[29].trim()
-
-                            const hash = crypto.createHash('md5').update(email + config.hashSecret).digest("hex");
-                            const params = [
-                                email,
-                                name,
-                                surname,
-                                null,
-                                gender,
-                                hash,
-                                name,
-                                surname,
-                                null,
-                                gender,
-                            ]
-
-                            const upsertResult = await db.executeQuery(insertCustomerQuery(), params);
-
-                            let customerId = upsertResult.insertId || 0;
-
-                            if (!customerId) {
-                                const result = await db.executeQuery(getCustomerByEmailQuery(), [email]);
-                                if (Array.isArray(result) && result.length) {
-                                    customerId = result[0].id
-                                }
-                            }
-
-                            if (customerId) {
-                                const amount = +ticketsPrice;
-                                const order_number = +orderId;
-                                const date = new Date(orderDate);
-
-                                const ticketParams = [customerId, order_number, date, amount]
-                                const params = []
-
-                                for (let i = 0; i < ticketsCount; i++) {
-                                    params.push(ticketParams)
-                                }
-
-                                await db.executeQuery(insertTicketsQuery(), [params]);
-                                addedOrdersCount++
-                                newCustomerIds.push(customerId)
-
-                            }
+                            newCodesNeeded += ticketsCount
+                            newRows.push(row)
                         } catch (e) {
                             // noinspection ExceptionCaughtLocallyJS
                             throw e;
                         }
                     }
+
+                    if (newRows.length) {
+
+                        const codes = (await db.executeQuery(getUnusedCodes(), [])).map(i => i.code);
+
+                        if (codes.length >= newCodesNeeded) {
+
+                            for (let row of newRows) {
+                                try {
+                                    const orderId = row[0].trim()
+                                    const orderDate = row[1].trim()
+                                    const ticketsCount = +row[9].trim()
+                                    const ticketsPrice = +row[10].trim()
+                                    const name = row[27].trim()
+                                    const surname = row[28].trim()
+                                    const gender = getGender(nameToGender, name, surname);
+                                    const email = row[29].trim()
+
+                                    const hash = crypto.createHash('md5').update(email + config.hashSecret).digest("hex");
+                                    const params = [
+                                        email,
+                                        name,
+                                        surname,
+                                        null,
+                                        gender,
+                                        hash,
+                                        name,
+                                        surname,
+                                        null,
+                                        gender,
+                                    ]
+
+                                    const upsertResult = await db.executeQuery(insertCustomerQuery(), params);
+
+                                    let customerId = upsertResult.insertId || 0;
+
+                                    if (!customerId) {
+                                        const result = await db.executeQuery(getCustomerByEmailQuery(), [email]);
+                                        if (Array.isArray(result) && result.length) {
+                                            customerId = result[0].id
+                                        }
+                                    }
+
+                                    if (customerId) {
+                                        const amount = +ticketsPrice;
+                                        const order_number = +orderId;
+                                        const date = new Date(orderDate);
+
+                                        const params = []
+                                        for (let i = 0; i < ticketsCount; i++) {
+                                            params.push([customerId, order_number, date, amount, codes.pop()])
+                                        }
+
+                                        await db.executeQuery(insertTicketsQuery(), [params]);
+                                        addedOrdersCount++
+                                        newCustomerIds.push(customerId)
+
+                                    }
+                                } catch (e) {
+                                    // noinspection ExceptionCaughtLocallyJS
+                                    throw e;
+                                }
+                            }
+                            uploadSuccess = true;
+                        } else {
+                            needMoreCodes = true;
+                            uploadSuccess = false;
+                        }
+                    }
+
                     await db.executeQuery("COMMIT");
-                    uploadSuccess = true;
+
 
                     if (sendCustomersLetters && newCustomerIds.length) {
                         const customers = await db.executeQuery(filterNewCustomers(), [config.emailTemplateConsentRequest, newCustomerIds]);
@@ -332,7 +327,7 @@ module.exports = async (ctx) => {
         content: ctx.request.body ? ctx.request.body.content : '',
         resetSuccess: resetSuccess,
         uploadSuccess: uploadSuccess,
-        // hasCustomers: hasCustomers,
+        needMoreCodes: needMoreCodes,
         formAction: pagePath(ctx.state.activeMenu, null),
     })
 
