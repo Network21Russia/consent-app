@@ -19,14 +19,19 @@
             box-sizing: border-box;
         }
 
+        @page {
+            size: a4 portrait !important;
+        }
+
         html {
             font-family: "Times New Roman", Times, serif !important;
             line-height: 1.15;
             -webkit-text-size-adjust: 100%;
             -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-            zoom:0.8;
-            width: 16cm;
-            max-width: 16cm;
+            zoom:<%=styles_zoom%>;
+            height: 261mm;
+            width: 174mm;
+            max-width: 174mm;
         }
 
         article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
@@ -42,9 +47,9 @@
             color: #000;
             text-align: left;
             background-color: #fff;
-            height: 100vh;
-            width: 16cm;
-            max-width: 16cm;
+            height: 261mm;
+            width: 174mm;
+            max-width: 174mm;
         }
 
         [tabindex="-1"]:focus:not(:focus-visible) {

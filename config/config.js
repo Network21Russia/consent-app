@@ -8,6 +8,10 @@ const getEnvVariable = envUtils.getEnvVariable;
 const mysqlDsn = new DSNParser(getEnvVariable('CLEARDB_DATABASE_URL', ''));
 const mysqlDsnParts = mysqlDsn.getParts();
 
+const env = getEnvVariable('NODE_ENV', 'dev');
+
+const isProduction = env === 'production';
+
 const config = {
     serverPort: +getEnvVariable('PORT', 3000),
 
@@ -43,6 +47,8 @@ const config = {
     emailTemplateCodes: +getEnvVariable('EMAIL_TEMPLATE_CODES', ''),
 
     TZCorrection: +getEnvVariable('TZ_CORRECTION', 180),
+
+    pdf_zoom_factor: isProduction ? 0.75 : 1,
 
 };
 

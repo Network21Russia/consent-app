@@ -97,6 +97,7 @@ module.exports = async (ctx, next) => {
             tickets: composeTickets(tickets),
             ticketsTotals: ticketsTotals,
             layout: 'pdf',
+            styles_zoom: config.pdf_zoom_factor,
             writeResp: false,
         })
 
