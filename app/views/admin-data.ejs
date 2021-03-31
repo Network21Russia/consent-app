@@ -18,13 +18,16 @@
         <% } %>
         <% if(uploadSuccess === true) { %>
             <div class="my-4 bg-success text-white p-2">Загрузка данных завершена успешно,
-                <%- declension(parsedRowsCount, "обработана", "обработано", "обработано", {printCount: false}) %> <%- declension(parsedRowsCount, "строка", "строки", "строк") %>.
+                <%- declension(parsedRowsCount, "обработана", "обработано", "обработано", {printCount: false}) %> <%- declension(parsedRowsCount, "строка", "строки", "строк") %>
+                .
                 <% if(content === 'data') { %>
-                    <%- declension(addedOrdersCount, "Добавлен", "Добавлено", "Добавлено", {printCount: false}) %> <%- declension(addedOrdersCount, "заказ", "заказа", "заказов") %>.
+                    <%- declension(addedOrdersCount, "Добавлен", "Добавлено", "Добавлено", {printCount: false}) %> <%- declension(addedOrdersCount, "заказ", "заказа", "заказов") %>
+                    .
                     Отправлено <%- declension(lettersSendCount, "письмо", "письма", "писем") %>.
                 <% } %>
                 <% if(content === 'codes') { %>
-                    <%- declension(addedCodesCount, "Добавлен", "Добавлено", "Добавлено", {printCount: false}) %> <%- declension(addedCodesCount, "код", "кода", "кодов") %>.
+                    <%- declension(addedCodesCount, "Добавлен", "Добавлено", "Добавлено", {printCount: false}) %> <%- declension(addedCodesCount, "код", "кода", "кодов") %>
+                    .
                 <% } %>
             </div>
         <% } %>
@@ -66,6 +69,19 @@
             <hr/>
 
             <div class="form-group">
+                <label class="pr-2">Тип кода:</label>
+                <% [1,2,3].forEach( function(value) { %>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="code_type" id="code_type_<%=value%>"
+                           value="<%=value%>">
+                    <label class="form-check-label" for="code_type_<%=value%>">
+                        <%= value %>
+                    </label>
+                </div>
+                <% }); %>
+            </div>
+
+            <div class="form-group">
                 <input type="file" class="form-control-file" name="file" accept="application/vnd.ms-excel, .xlsx">
             </div>
 
@@ -87,7 +103,8 @@
 
             <div>
                 <button type="submit" disabled class="btn btn-danger my-1"
-                        onclick="return confirm('Вы точно хотите это сделать?');">Сбросить</button>
+                        onclick="return confirm('Вы точно хотите это сделать?');">Сбросить
+                </button>
             </div>
         </form>
 

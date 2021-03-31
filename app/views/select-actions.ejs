@@ -1,0 +1,274 @@
+<div class="row">
+    <div class="col">
+
+        <form action="/customer/<%= customer.url_hash %>" method="post">
+
+            <h1 class="text-center mb-4"><%= genderify(customer.gender, 'Уважаемый', 'Уважаемая') %>
+                <%-
+                ([customer.name, customer.surname].filter(Boolean).join('&nbsp;')).trim()
+                %>!
+            </h1>
+
+            <p>Вами ранее
+                <%- pluralize(hasManyTickets,
+                        `были приобретены ${declension(tickets.length, "билет", "билета", "билетов")} на несостоявшиеся Уикенд-семинары`,
+                        'был приобретен билет на несостоявшийся Уикенд-семинар') %>
+                (WES) системы &laquo;Нетворк 21&raquo;
+                <%= pluralize(hasManyTickets, 'на общую сумму', 'стоимостью') %>
+                <span class="selected-amount text-nowrap">
+                    <%- formatMoney(ticketsTotals.sum, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;руб.,
+                <%= pluralize(hasManyTickets, 'которые', 'который') %>
+                вы&nbsp;не&nbsp;использовали для участия в&nbsp;аналогичных мероприятиях, проводившихся
+                в&nbsp;<span class="text-nowrap">онлайн-формате</span>
+            </p>
+
+            <p>Летом 2021&nbsp;г. &laquo;Нетворк 21&raquo; планирует проведение
+                <span class="text-nowrap">Уикенд-семинаров</span>
+                в&nbsp;обычном традиционном формате офлайн (с&nbsp;соблюдением всех необходимых мер безопасности).
+            </p>
+            <p>Поэтому сейчас мы&nbsp;предлагаем вам несколько вариантов, как поступить с&nbsp;<%= pluralize
+                (hasManyTickets, 'неиспользованными вами билетами', 'неиспользованным вами билетом') %>.</p>
+
+            <p>В&nbsp;отношении <%= pluralize(hasManyTickets, 'каждого', 'вашего') %> билета вы&nbsp;можете либо
+                произвести &laquo;обмен по&nbsp;выгодному курсу&raquo; на&nbsp;подписку на&nbsp;электронную платформу
+                N21 Mobile, либо произвести доплату в&nbsp;необходимом размере для участия в&nbsp;<span
+                        class="text-nowrap">офлайн-семинарах</span> летом 2021&nbsp;г.</p>
+
+            <p><b>Вам нужно выбрать
+                    <%= pluralize(hasManyTickets, 'действия для всех ваших билетов', 'действие для вашего билета') %>
+                    :</b></p>
+
+            <table class="table border-bottom">
+                <% for (var i = 0; i < tickets.length;  i++ ) { let ticket = tickets[i] %>
+                <tr>
+                    <td class="align-middle">
+                        <label class="mb-0" for="ticket_check_<%= i %>">&bull;
+                            билет <%= i + 1 %>
+                            <span class="text-nowrap">(цена <%- formatMoney(ticket.amount, 0, 3, '&nbsp;', ',').trim() %>&nbsp;руб.;</span>
+                            заказ&nbsp;<%= ticket.order_number %>,
+                            <%= ticket.event_name %>)
+                        </label>
+                    </td>
+                    <td class="align-middle">
+                        <select class="action-select form-control form-control-sm" name="ticket[]"
+                                id="ticket_check_<%= i %>"
+                                data-surcharge="<%= ticket.surcharge_amount %>"
+                                tabindex="100<%= i %>">
+                            <option value="empty">Выберите действие...</option>
+                            <option value="code_1_<%= ticket.id %>">Обменять на 3 месяца Лидерской-Плюс подписки на N21
+                                Mobile
+                            </option>
+                            <option value="code_2_<%= ticket.id %>">Обменять на 4 месяца Лидерской подписки на N21
+                                Mobile
+                            </option>
+                            <option value="code_3_<%= ticket.id %>">Обменять на 6 месяцев Партнерской подписки на N21
+                                Mobile
+                            </option>
+                            <option value="surcharge_1_<%= ticket.id %>">Доплатить <%= ticket.surcharge_amount %> руб.
+                                для участия в WES в Екатеринбурге 2–4.07.2021
+                            </option>
+                            <option value="surcharge_2_<%= ticket.id %>">Доплатить <%= ticket.surcharge_amount %> руб.
+                                для участия в WES в Москве 16–18.07.2021
+                            </option>
+                            <option value="surcharge_3_<%= ticket.id %>">Доплатить <%= ticket.surcharge_amount %> руб.
+                                для участия в WES в Ростове-на-Дону 23–25.07.2021
+                            </option>
+                            <optgroup label=""></optgroup>
+                        </select>
+                    </td>
+                </tr>
+                <% } %>
+            </table>
+
+
+            <div id="consent-info" class="d-none">
+
+                <p>По результатам вашего выбора Вы подписываете
+                    <a href="/consent/template/codes" class="var code" rel="noopener" target="_blank">Соглашение о&nbsp;
+                        переуступке прав и&nbsp;обязанностей</a><span class="var only_code">.</span>
+                    <span class="var both">и</span>
+                    <a href="/consent/template/surcharge" class="var only_surcharge surcharge" rel="noopener" target="_blank">Соглашение
+                        о&nbsp;замене сроков проведения WES семинаров системы
+                        &laquo;Нетворк 21&raquo;</a><span class="var with_surchage">.</span></p>
+
+
+                <p>Для оформления Соглашения нам нужно уточнить ваши данные. Пожалуйста, введите (или, при
+                    необходимости, измените):</p>
+
+                <div class="form-group row">
+                    <label for="surname" class="col-sm-2 col-form-label">вашу фамилию</label>
+                    <div class="col-sm-3">
+                        <input type="text" class="pers form-control form-control-sm my-1" name="surname" id="surname"
+                               tabindex="200<%= tickets.length + 1 %>" placeholder="Фамилия"
+                               value="<%= customer.surname %>"/>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="name" class="col-sm-2 col-form-label">имя</label>
+                    <div class="col-sm-3">
+                        <input type="text" class="pers form-control form-control-sm my-1" name="name" id="name"
+                               tabindex="200<%= tickets.length + 1 %>" placeholder="Имя"
+                               value="<%= customer.name %>"/>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="patronimic" class="col-sm-2 col-form-label">отчество</label>
+                    <div class="col-sm-3">
+
+                        <input type="text" class="pers form-control form-control-sm my-1" name="patronimic" id="patronimic"
+                               tabindex="200<%= tickets.length + 1 %>" placeholder="Отчество"
+                               value="<%= customer.patronimic %>"/>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="pass_serial" class="col-sm-2 col-form-label">и&nbsp;данные&nbsp;паспорта</label>
+                    <div class="col-sm-3">
+                    <span class="customer-edit form-inline text-nowrap">
+                    <input type="text" class="pers form-control form-control-sm my-1" name="pass_serial" id="pass_serial"
+                           tabindex="200<%= tickets.length + 2 %>" placeholder="серия"
+                           value="<%= customer.pass_serial %>"
+                           style="width:122px"/>
+                    <input type="text" class="pers form-control form-control-sm my-1" name="pass_number" id="pass_number"
+                           tabindex="200<%= tickets.length + 3 %>" placeholder="номер"
+                           value="<%= customer.pass_number %>"/>
+                    </span>
+                    </div>
+                </div>
+
+                <hr/>
+
+                <p><b>Пожалуйста, подтвердите ваш выбор и данные!</b></p>
+
+                <p class="var only_code mb-3">Сразу после нажатия на&nbsp;кнопку
+                    мы&nbsp;вышлем вам подписанное Соглашение и&nbsp;коды доступа к&nbsp;подписке на&nbsp;N21 Mobile.</p>
+
+                <p class="var only_surcharge mb-3">Сразу после нажатия на&nbsp;кнопку, вам
+                    будет необходимо произвести доплату в&nbsp;размере <span class="total_surcharge">0</span>&nbsp;руб.
+                    банковской картой&nbsp;&mdash;только после успешной оплаты мы&nbsp;вышлем вам подписанное Соглашение.</p>
+
+                <p class="var both mb-3">Сразу после нажатия на&nbsp; кнопку, вам будет необходимо произвести доплату
+                    в&nbsp;размере <span class="total_surcharge">0</span>&nbsp;руб. банковской картой&nbsp;&mdash;
+                    только после успешной оплаты мы&nbsp;вышлем вам подписанные Соглашения
+                    (а&nbsp;также коды доступа к&nbsp;подписке на&nbsp;N21 Mobile).</p>
+
+                <p class="mt-3">Нажимая на&nbsp;кнопку, вы&nbsp;также даете согласие на&nbsp;передачу, обработку
+                    и&nbsp;распространение ваших персональных данных.</p>
+
+            </div>
+
+            <p class="text-center mt-4">
+                <button type="submit" class="btn btn-primary submit" id="submit"
+                        tabindex="300<%= tickets.length + 4 %>" onclick="return validate()">Подтвердить
+                </button>
+            </p>
+        </form>
+    </div>
+</div>
+
+<script>
+    var submit = document.getElementById('submit');
+    var pers = document.querySelectorAll('.pers');
+    var inputs = document.querySelectorAll('.action-select');
+    var total_surcharges = document.querySelectorAll('.total_surcharge');
+    var consentInfo = document.getElementById('consent-info');
+    var lastClass = 'd-none'
+    var actions = {
+        empty: true
+    }
+
+    function recalc(event, validate) {
+        validate = !!validate;
+        var total_amount = 0;
+        actions = {}
+        for (var i = 0; i < inputs.length; i++) {
+            var val = inputs[i].value
+            var action = val.split('_').shift()
+            actions[action] = true
+            if (action === 'surcharge') {
+                total_amount += inputs[i].getAttribute('data-surcharge') * 1
+            }
+
+            var parentTr = inputs[i].parentNode.parentNode;
+
+            if (validate && action === 'empty') {
+                addClass(parentTr, 'text-red')
+            } else {
+                removeClass(parentTr, 'text-red')
+            }
+        }
+
+        for (var i = 0; i < total_surcharges.length; i++) {
+            total_surcharges[i].innerHTML = formatMoney(total_amount, 0, 3, '&nbsp;', ',').trim()
+        }
+
+        var allActions = Object.keys(actions);
+        var consentInfoBlockClass = 'd-none';
+        var submitText = 'Подтвердить'
+
+        if (allActions.indexOf('code') >= 0 && allActions.indexOf('surcharge') >= 0) {
+            consentInfoBlockClass = 'both';
+            submitText = 'Подписать Соглашения и&nbsp;доплатить&nbsp;' + formatMoney(total_amount, 0, 3, '&nbsp;', ',').trim() + '&nbsp;руб.';
+        } else if (allActions.indexOf('code') >= 0) {
+            consentInfoBlockClass = 'only_code';
+            submitText = 'Подписать Соглашение и&nbsp;получить подписку на&nbsp;N21 Mobile';
+        } else if (allActions.indexOf('surcharge') >= 0) {
+            consentInfoBlockClass = 'surcharge';
+            submitText = 'Подписать Соглашение и&nbsp;доплатить&nbsp;' + formatMoney(total_amount, 0, 3, '&nbsp;', ',').trim() + '&nbsp;руб.';
+        }
+
+        submit.innerHTML = submitText
+
+        if (lastClass !== consentInfoBlockClass) {
+            ['d-none', 'both', 'only_code', 'surcharge'].forEach(cl => {
+                if (cl === consentInfoBlockClass) {
+                    addClass(consentInfo, consentInfoBlockClass)
+                } else {
+                    removeClass(consentInfo, cl)
+                }
+            })
+            lastClass = consentInfoBlockClass
+        }
+    }
+
+    function validate() {
+        recalc(null, true)
+
+        var persValid = true
+        for (var i = 0; i < pers.length; i++) {
+            var parentTr = pers[i].parentNode.parentNode;
+            if (!hasClass(parentTr, 'form-group')) {
+                parentTr = parentTr.parentNode;
+            }
+            if (!pers[i].value) {
+                persValid = false
+                addClass(parentTr, 'text-red')
+            } else {
+                removeClass(parentTr, 'text-red')
+            }
+        }
+
+        return Object.keys(actions).indexOf('empty') < 0 && persValid
+    }
+
+    function resetValidation() {
+        var parentTr = this.parentNode.parentNode;
+        if (!hasClass(parentTr, 'form-group')) {
+            parentTr = parentTr.parentNode;
+        }
+        removeClass(parentTr, 'text-red')
+    }
+
+    function init() {
+        for (var i = 0; i < inputs.length; i++) {
+            addEventListener(inputs[i], 'change', recalc);
+        }
+        for (var i = 0; i < pers.length; i++) {
+            addEventListener(pers[i], 'focus', resetValidation);
+        }
+    }
+
+    ready(init);
+</script>

@@ -11106,8 +11106,42 @@ a.text-dark:hover, a.text-dark:focus {
     max-width: 128px;
 }
 
+optgroup {
+    display: none;
+}
+
 .customer-static {
     color: #007bff;
     cursor: pointer;
     text-decoration: underline;
+}
+
+#consent-info .var {
+    display: none;
+}
+
+#consent-info.only_code .var.code,
+#consent-info.only_code .var.only_code {
+    display: initial;
+}
+
+#consent-info.surcharge .var.with_surchage,
+#consent-info.surcharge .var.only_surcharge {
+    display: initial;
+}
+
+#consent-info.both .var.code,
+#consent-info.both .var.surcharge,
+#consent-info.both .var.with_surchage,
+#consent-info.both .var.both {
+    display: initial;
+}
+
+.text-red {
+    color:red
+}
+
+a[target="_blank"]::after {
+    content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVR42qXKwQkAIAxDUUdxtO6/RBQkQZvSi8I/pL4BoGw/XPkh4XigPmsUgh0626AjRsgxHTkUThsG2T/sIlzdTsp52kSS1wAAAABJRU5ErkJggg==);
+    margin: 0 3px 0 5px;
 }

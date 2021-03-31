@@ -5,7 +5,7 @@ const DatabaseConnection = require('mysql-flexi-promise');
 const config = require('../../config/config');
 const {getCustomersQuery, getTicketsQuery, getTicketsTotalsQuery} = require('../db/queries')
 
-module.exports = async (ctx, next) => {
+module.exports = async (ctx) => {
 
     ctx.state.title = 'Соглашение';
 
@@ -27,7 +27,7 @@ module.exports = async (ctx, next) => {
     let tickets = [];
     let ticketsTotals = {};
 
-    let template = 'consent';
+    let template = 'select-actions';
     if (customer.rest_tickets <= 0) {
         template = 'no-consent';
     } else {
@@ -56,6 +56,7 @@ module.exports = async (ctx, next) => {
         consentSigner: config.consentSigner,
         isSignMode: false,
         tickets: tickets,
+        hasManyTickets: tickets.length > 1,
         ticketsTotals: ticketsTotals,
     })
 

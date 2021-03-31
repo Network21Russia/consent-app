@@ -28,7 +28,7 @@ async function getCss() {
 
                 next();
             },
-            function (err, files) {
+            function (err) {
                 if (err) reject(err);
                 resolve(f);
             });
@@ -50,7 +50,7 @@ async function getCss() {
     const uniqTags = [...new Set(tags.flat())].sort();
 
     const uniqClasses = [...new Set(classes.flat())].map(c => c.replace('"', ''));
-    uniqClasses.push('active'); // hardcode here!
+    uniqClasses.push('active', 'text-red'); // hardcode here!
     uniqClasses.sort()
 
     const options = {
@@ -69,7 +69,7 @@ async function getCss() {
 }
 
 
-module.exports = async (ctx, next) => {
+module.exports = async (ctx) => {
     cacheLong(ctx, mime.lookup(filepath));
     ctx.body = await getCss();
 };

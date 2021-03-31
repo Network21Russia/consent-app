@@ -28,25 +28,20 @@
                 <thead class="thead-dark text-center">
                 <tr>
                     <th class="align-middle" scope="col">Код билета</th>
-                    <th class="align-middle" scope="col">Фамилия</th>
-                    <th class="align-middle" scope="col">Имя</th>
-                    <!--<th class="align-middle" scope="col">Отчество</th>-->
+                    <th class="align-middle" scope="col">ФИО</th>
                     <th class="align-middle" scope="col">E-mail</th>
                     <th class="align-middle" scope="col">Цена</th>
                     <th class="align-middle" scope="col">Заказ</th>
                     <th class="align-middle" scope="col">Дата заказа</th>
-                    <th class="align-middle" scope="col">Включен<br/>в согласие</th>
-                    <th class="align-middle" scope="col">Код</th>
+                    <th class="align-middle" scope="col">Включен<br/>в&nbsp;согласие</th>
+                    <th class="align-middle" scope="col">Выбор<br/>пользователя</th>
                 </tr>
                 </thead>
                 <tbody>
                 <% tickets.forEach( function(ticket) { %>
                     <tr>
                         <td class="align-middle"><%= ticket.ticket_id %></td>
-                        <td class="align-middle"><%= ticket.surname %></td>
-                        <td class="align-middle"><%= ticket.name %></td>
-                        <!--<td class="align-middle"><%= ticket.patronimic %></td>-->
-
+                        <td class="align-middle"><%= ticket.surname %> <%= ticket.name %> <%= ticket.patronimic %></td>
                         <td class="align-middle">
                             <a href="/customer/<%= ticket.url_hash %>" target="_blank" title="Смотреть страницу принятия согласия">
                                 <%= ticket.email %>
@@ -65,7 +60,18 @@
                                 нет
                             <% } %>
                         </td>
-                        <td class="align-middle text-center"><%=ticket.code%></td>
+                        <td class="align-middle text-center">
+                            <% if(ticket.consent_id) { %>
+                                <% if(ticket.action === 'surcharge') { %>
+                                    доплачено <%=ticket.surcharge_amount%>&nbsp;руб.
+                                <% } else { let codeType = ticket.action.split('-').pop()%>
+                                    код (<%=codeType%>)<br/>
+                                <span class="text-nowrap"><%=ticket['code_type_' + codeType]%></span>
+                                <% } %>
+                            <% } else { %>
+                                &mdash;
+                            <% } %>
+                        </td>
                     </tr>
                 <% }); %>
                 </tbody>

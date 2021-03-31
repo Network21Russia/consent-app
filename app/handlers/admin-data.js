@@ -29,17 +29,24 @@ const surnameCompletions = {
     male: ['ов', 'ев', 'ин', 'ын', 'ой', 'цкий', 'ский', 'цкой', 'ской']
 }
 
+const codesTypes = [1, 2, 3]
+
+const surcharges = {
+    3700: 200,
+    4000: 500,
+}
+
 function getGender(dict, name, surname) {
 
     const nameLc = name.toLowerCase();
     const surnameLc = surname.toLowerCase();
 
     if (dict.hasOwnProperty(nameLc)) {
-        return dict.hasOwnProperty(nameLc)
+        return dict[nameLc]
     }
     // fallback на случай если в таблице перепутаны местами имя и фамилия
     if (dict.hasOwnProperty(surnameLc)) {
-        return dict.hasOwnProperty(surnameLc)
+        return dict[surnameLc]
     }
 
     for (let gender of Object.keys(surnameCompletions)) {
@@ -57,8 +64,6 @@ function getGender(dict, name, surname) {
             }
         }
     }
-
-    console.log('blah', name, surname)
 
     // по статистике прошлых заказов, 60% покупателей билетов - женщины
     // поэтому если не удалось определить пол никаким способом, то возвращаем по умолчанию женский
@@ -126,9 +131,15 @@ module.exports = async (ctx) => {
 
                     uploadSuccess = false;
 
+                    const codeType = +(ctx.request.body.code_type) || 0
+
+                    if (codesTypes.indexOf(codeType) < 0) {
+                        throw new Error('invalid codeType')
+                    }
+
                     const workSheetsFromBuffer = xlsx.parse(fs.readFileSync(path.resolve(ctx.request.files.file.path)));
 
-                    const rows = workSheetsFromBuffer["0"].data.slice(6).map(i => [i[0]])
+                    const rows = workSheetsFromBuffer["0"].data.slice(6).map(i => [i[0], codeType])
 
                     addedCodesCount = rows.length;
 
@@ -151,6 +162,8 @@ module.exports = async (ctx) => {
                     const rows = []
 
                     const $ = cheerio.load((fs.readFileSync(path.resolve(ctx.request.files.file.path)) + '').split('<!DOCTYPE').shift());
+
+                    const eventName = $('body > table tr:nth-child(2) td table tr:nth-child(2) td').text().split(':').pop().trim();
 
                     $('body > table tr:nth-child(3) td table tr:not(:first-child)').each(function () {
                         const row = {}
@@ -187,9 +200,18 @@ module.exports = async (ctx) => {
 
                     if (newRows.length) {
 
-                        const codes = (await db.executeQuery(getUnusedCodes(), [])).map(i => i.code);
+                        const codes = {}
 
-                        if (codes.length >= newCodesNeeded) {
+                        for (let type of codesTypes) {
+                            codes[type] = (await db.executeQuery(getUnusedCodes(type), [])).map(i => i.code);
+                            if (codes[type].length < newCodesNeeded) {
+                                needMoreCodes = true;
+                                uploadSuccess = false;
+                                break;
+                            }
+                        }
+
+                        if (!needMoreCodes) {
 
                             for (let row of newRows) {
                                 try {
@@ -234,7 +256,12 @@ module.exports = async (ctx) => {
 
                                         const params = []
                                         for (let i = 0; i < ticketsCount; i++) {
-                                            params.push([customerId, order_number, date, amount, codes.pop()])
+                                            const surcharge = surcharges[amount] || 0
+                                            const data = [customerId, order_number, date, eventName, amount, surcharge]
+                                            codesTypes.forEach( codeType => {
+                                                data.push(codes[codeType].pop())
+                                            })
+                                            params.push(data)
                                         }
 
                                         await db.executeQuery(insertTicketsQuery(), [params]);
@@ -248,9 +275,6 @@ module.exports = async (ctx) => {
                                 }
                             }
                             uploadSuccess = true;
-                        } else {
-                            needMoreCodes = true;
-                            uploadSuccess = false;
                         }
                     }
 

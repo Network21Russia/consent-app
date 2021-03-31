@@ -1,6 +1,6 @@
 {
   "name": "consent-app",
-  "version": "1.0.0",
+  "version": "3.0.5",
   "description": "Consent app for Network 21 Russia",
   "main": "index.js",
   "scripts": {
@@ -10,6 +10,11 @@
   "author": "Evgenii Strigo",
   "email": "james.kotoff@gmail.com",
   "license": "none",
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm --no-git-tag-version version patch && git add package.json package-lock.json"
+    }
+  },
   "dependencies": {
     "@koa/router": "^9.4.0",
     "cheerio": "^1.0.0-rc.5",
@@ -38,5 +43,8 @@
     "postmark": "^2.5.5",
     "sqlmigrate": "^2.1.0",
     "uglify-js": "^3.10.3"
+  },
+  "devDependencies": {
+    "husky": "^4.3.6"
   }
 }

@@ -85,6 +85,8 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
                         patronimic,
                         gender,
                         email,
+                        pass_serial,
+                        pass_number,
                         url_hash,
                         letter_send,
                         letter_delivered,
@@ -100,6 +102,8 @@ function _getCustomersQuery(filter = {}, count = false, limit = 10, offset = 0) 
                               customers.patronimic,
                               customers.gender,
                               customers.email,
+                              customers.pass_serial,
+                              customers.pass_number,
                               HEX(hash)                                         AS url_hash,
                               NOT ISNULL(emails.id)                             AS letter_send,
                               IF(SUM(IFNULL(emails.is_delivered, 0)) > 0, 1, 0) AS letter_delivered,
@@ -330,7 +334,7 @@ function insertCustomerQuery() {
 }
 
 function insertTicketsQuery() {
-    return 'INSERT INTO `tickets`(`customer_id`, `order_number`, `order_date`, `amount`, `code`) VALUES ?';
+    return 'INSERT INTO `tickets`(`customer_id`, `order_number`, `order_date`, `event_name`, `amount`, `surcharge_amount`, `code_type_1`, `code_type_2`, `code_type_3`) VALUES ?';
 }
 
 function insertConsentQuery() {
@@ -354,7 +358,7 @@ function setTicketsConsentQuery() {
 }
 
 function fillCodesTable() {
-    return 'INSERT INTO codes (code) VALUES ?';
+    return 'INSERT INTO codes (code, code_type) VALUES ?';
 }
 
 function getCodesToSendCount() {
@@ -414,8 +418,8 @@ function filterNewCustomers() {
             GROUP BY customers.id`;
 }
 
-function getUnusedCodes() {
-    return "SELECT code FROM codes WHERE code NOT IN (SELECT code FROM tickets WHERE code IS NOT NULL) ORDER BY code DESC";
+function getUnusedCodes(type) {
+    return `SELECT code FROM codes WHERE code_type = ${type} AND code NOT IN (SELECT code_type_${type} FROM tickets WHERE code_type_${type} IS NOT NULL) ORDER BY code DESC`;
 }
 
 

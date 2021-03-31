@@ -18,6 +18,7 @@ const shutdown = require('koa-graceful-shutdown');
 const config = require('../config/config');
 const declension = require('./utils/declension');
 const {genderify} = require('./utils/genderify');
+const {pluralize} = require('./utils/pluralize');
 const {formatDate, formatDateTime} = require('./utils/format-date');
 const formatMoney = require('./utils/format-money');
 const router = require('./router');
@@ -98,6 +99,7 @@ function start(logger) {
                 ctx.state.formatDateTime = formatDateTime;
                 ctx.state.formatMoney = formatMoney;
                 ctx.state.genderify = genderify;
+                ctx.state.pluralize = pluralize;
                 ctx.state.menu = {};
                 ctx.state.lastModified = lastModified;
 
@@ -116,7 +118,7 @@ function start(logger) {
         .use(mount(config.adminRoutesNamespace, auth({name: config.adminLogin, pass: config.adminPassword})))
         .use(router.routes())
         .use(router.allowedMethods())
-        .use(async (ctx, next) => {
+        .use(async (ctx) => {
             ctx.status = 404;
             return ctx.render('404');
         })
