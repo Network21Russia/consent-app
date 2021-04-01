@@ -48,9 +48,7 @@
                 <thead class="thead-dark text-center">
                 <tr>
                     <th class="align-middle" scope="col">Id письма</th>
-                    <th class="align-middle" scope="col">Фамилия</th>
-                    <th class="align-middle" scope="col">Имя</th>
-                    <!--<th class="align-middle" scope="col">Отчество</th>-->
+                    <th class="align-middle" scope="col">ФИО</th>
                     <th class="align-middle" scope="col">E-mail</th>
                     <th class="align-middle" scope="col">Шаблон</th>
                     <th class="align-middle" scope="col">Отправлено</th>
@@ -62,9 +60,8 @@
                 <% emails.forEach( function(email) { %>
                     <tr>
                         <td class="align-middle" title="<%= email.ext_id %>"><%= email.email_id %></td>
-                        <td class="align-middle"><%= email.surname %></td>
-                        <td class="align-middle"><%= email.name %></td>
-                        <!--<td class="align-middle"><%= email.patronimic %></td>-->
+                        <td class="align-middle"><%-([email.surname, email.name, email.patronimic].filter
+                            (Boolean).join(' ')).trim()%></td>
                         <td class="align-middle"><%= email.email %></td>
                         <td class="align-middle text-center">
                             <%=emailTemplateNames[email.template_id]%>

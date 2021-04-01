@@ -25,13 +25,13 @@
 
         html {
             font-family: "Times New Roman", Times, serif !important;
-            line-height: 1.15;
+            line-height: 1.10;
             -webkit-text-size-adjust: 100%;
             -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
             zoom:<%=styles_zoom%>;
             height: 261mm;
-            width: 174mm;
-            max-width: 174mm;
+            width: 184mm;
+            max-width: 184mm;
         }
 
         article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
@@ -41,15 +41,15 @@
         body {
             margin: 0;
             font-family: "Times New Roman", Times, serif !important;
-            font-size: 11pt !important;
+            font-size: 8pt !important;
             font-weight: 400;
-            line-height: 1.5;
+            line-height: 1.10;
             color: #000;
             text-align: left;
             background-color: #fff;
             height: 261mm;
-            width: 174mm;
-            max-width: 174mm;
+            width: 184mm;
+            max-width: 184mm;
         }
 
         [tabindex="-1"]:focus:not(:focus-visible) {
@@ -64,12 +64,16 @@
 
         h1, h2, h3, h4, h5, h6 {
             margin-top: 0;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
+        }
+
+        h1 {
+            font-size: 10pt;
         }
 
         p {
             margin-top: 0;
-            margin-bottom: 1rem;
+            margin-bottom: 0.35rem;
         }
 
         abbr[title],
@@ -357,6 +361,5 @@
 </head>
 <body>
     <%- body %>
-    <div id="pageFooter"></div>
 </body>
 </html>

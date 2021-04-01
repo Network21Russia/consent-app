@@ -6,9 +6,9 @@
             <table class="table table-striped table-hover table-bordered">
                 <thead class="thead-dark text-center">
                 <tr>
-                    <th class="align-middle" scope="col">№ согласия</th>
-                    <th class="align-middle" scope="col">Фамилия</th>
-                    <th class="align-middle" scope="col">Имя</th>
+                    <th class="align-middle" scope="col">№<br>согласия</th>
+                    <th class="align-middle" scope="col">Тип</th>
+                    <th class="align-middle" scope="col">ФИО</th>
                     <!--<th class="align-middle" scope="col">Отчество</th>-->
                     <th class="align-middle" scope="col">E-mail</th>
                     <th class="align-middle" scope="col">Дата</th>
@@ -16,16 +16,23 @@
                     <th class="align-middle" scope="col">Сумма, руб.</th>
                     <th class="align-middle" scope="col">Скачать</th>
                     <th class="align-middle" scope="col">Коды<br/>отправлены</th>
+                    <th class="align-middle" scope="col">Доплата<br/>получена</th>
                 </tr>
                 </thead>
                 <tbody>
                 <% consents.forEach( function(consent) { %>
                     <tr>
-                        <td class="align-middle"><%= 1 + ((consent.id / 10).toFixed(0) * 1) %></td>
-                        <td class="align-middle"><%= consent.signed_surname %></td>
-                        <td class="align-middle"><%= consent.signed_name %></td>
-                        <!--<td class="align-middle"><%= consent.signed_patronimic %></td>-->
-                        <td class="align-middle"><%= consent.signed_email %></td>
+                        <td class="align-middle"><%= consent.consent_number %></td>
+                        <td class="align-middle">
+                            <% if(consent.type === 'surcharge') { %>
+                            Доплата
+                            <% } else {%>
+                            Коды
+                            <% } %>
+                        </td>
+                        <td class="align-middle"><%-([consent.signed_surname, consent.signed_name, consent.signed_patronimic].filter
+                            (Boolean).join('<br>')).trim()%></td>
+                        <td class="align-middle text-nowrap"><%= consent.signed_email %></td>
                         <td class="align-middle text-center"><%= formatDateTime(consent.datetime) %></td>
                         <td class="align-middle text-center"><%= consent.consent_tickets %></td>
                         <td class="align-middle text-center"><%- formatMoney(consent.consent_tickets_amount, 0, 3, '&nbsp;', ',').trim() %></td>
@@ -35,7 +42,8 @@
                                 <i class="icon pdf"></i>
                             </a>
                         </td>
-                        <td class="align-middle text-center"><%= consent.code_sent ? 'Да' : 'Нет' %></td>
+                        <td class="align-middle text-center"><%- consent.type === 'surcharge' ? '&mdash;' : consent.code_sent ? 'Да' : 'Нет' %></td>
+                        <td class="align-middle text-center"><%- consent.type === 'code' ? '&mdash;' : consent.payment_received ? 'Да' : 'Нет' %></td>
                     </tr>
                 <% }); %>
                 </tbody>

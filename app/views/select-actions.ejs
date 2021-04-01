@@ -55,22 +55,22 @@
                                 data-surcharge="<%= ticket.surcharge_amount %>"
                                 tabindex="100<%= i %>">
                             <option value="empty">Выберите действие...</option>
-                            <option value="code_1_<%= ticket.id %>">Обменять на 3 месяца Лидерской-Плюс подписки на N21
+                            <option value="code-1-<%= ticket.id %>">Обменять на 3 месяца Лидерской-Плюс подписки на N21
                                 Mobile
                             </option>
-                            <option value="code_2_<%= ticket.id %>">Обменять на 4 месяца Лидерской подписки на N21
+                            <option value="code-2-<%= ticket.id %>">Обменять на 4 месяца Лидерской подписки на N21
                                 Mobile
                             </option>
-                            <option value="code_3_<%= ticket.id %>">Обменять на 6 месяцев Партнерской подписки на N21
+                            <option value="code-3-<%= ticket.id %>">Обменять на 6 месяцев Партнерской подписки на N21
                                 Mobile
                             </option>
-                            <option value="surcharge_1_<%= ticket.id %>">Доплатить <%= ticket.surcharge_amount %> руб.
+                            <option value="surcharge-1-<%= ticket.id %>">Доплатить <%= ticket.surcharge_amount %> руб.
                                 для участия в WES в Екатеринбурге 2–4.07.2021
                             </option>
-                            <option value="surcharge_2_<%= ticket.id %>">Доплатить <%= ticket.surcharge_amount %> руб.
+                            <option value="surcharge-2-<%= ticket.id %>">Доплатить <%= ticket.surcharge_amount %> руб.
                                 для участия в WES в Москве 16–18.07.2021
                             </option>
-                            <option value="surcharge_3_<%= ticket.id %>">Доплатить <%= ticket.surcharge_amount %> руб.
+                            <option value="surcharge-3-<%= ticket.id %>">Доплатить <%= ticket.surcharge_amount %> руб.
                                 для участия в WES в Ростове-на-Дону 23–25.07.2021
                             </option>
                             <optgroup label=""></optgroup>
@@ -84,7 +84,7 @@
             <div id="consent-info" class="d-none">
 
                 <p>По результатам вашего выбора Вы подписываете
-                    <a href="/consent/template/codes" class="var code" rel="noopener" target="_blank">Соглашение о&nbsp;
+                    <a href="/consent/template/code" class="var code" rel="noopener" target="_blank">Соглашение о&nbsp;
                         переуступке прав и&nbsp;обязанностей</a><span class="var only_code">.</span>
                     <span class="var both">и</span>
                     <a href="/consent/template/surcharge" class="var only_surcharge surcharge" rel="noopener" target="_blank">Соглашение
@@ -129,10 +129,10 @@
                     <span class="customer-edit form-inline text-nowrap">
                     <input type="text" class="pers form-control form-control-sm my-1" name="pass_serial" id="pass_serial"
                            tabindex="200<%= tickets.length + 2 %>" placeholder="серия"
-                           value="<%= customer.pass_serial %>"
+                           value="<%= customer.pass_serial %>" minlength="4" maxlength="4"
                            style="width:122px"/>
                     <input type="text" class="pers form-control form-control-sm my-1" name="pass_number" id="pass_number"
-                           tabindex="200<%= tickets.length + 3 %>" placeholder="номер"
+                           tabindex="200<%= tickets.length + 3 %>" placeholder="номер" minlength="6" maxlength="6"
                            value="<%= customer.pass_number %>"/>
                     </span>
                     </div>
@@ -185,7 +185,7 @@
         actions = {}
         for (var i = 0; i < inputs.length; i++) {
             var val = inputs[i].value
-            var action = val.split('_').shift()
+            var action = val.split('-').shift()
             actions[action] = true
             if (action === 'surcharge') {
                 total_amount += inputs[i].getAttribute('data-surcharge') * 1

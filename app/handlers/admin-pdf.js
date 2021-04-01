@@ -4,8 +4,8 @@ const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
 const renderPdf = require('../utils/render-pdf');
-const composeTickets = require('../utils/compose-tickets');
-const {getConsentsQuery, getCustomerByIdQuery, getTicketsQuery, getTicketsTotalsQuery} = require('../db/queries');
+const {composeTickets, composeExchange, exchangeOptions} = require('../utils/compose-tickets');
+const {getConsentsQuery, getCustomerByIdQuery, getTicketsQuery} = require('../db/queries');
 
 module.exports = async (ctx, next) => {
 
@@ -55,22 +55,14 @@ module.exports = async (ctx, next) => {
         ctx.throw(500);
     }
 
-    query = getTicketsTotalsQuery(ticketsFilter, -1, 0);
-    const ticketsTotalsRes = await db.executeQuery(query, ticketsQueryParams);
-
-    if (!(Array.isArray(ticketsTotalsRes) && ticketsTotalsRes.length)) {
-        ctx.throw(500);
-    }
-
-    const ticketsTotals = ticketsTotalsRes[0];
-
-    const rendered = await ctx.render('consent', {
+    const rendered = await ctx.render('consent-' + consent.type, {
+        isTemplate: false,
+        consent: consent,
         customer: customer,
-        date: consent.datetime,
         consentSigner: config.consentSigner,
-        isSignMode: true,
-        tickets: composeTickets(tickets),
-        ticketsTotals: ticketsTotals,
+        composedTickets: composeTickets(tickets),
+        composeExchange: composeExchange(tickets),
+        exchangeOptions: exchangeOptions[consent.type],
         layout: 'pdf',
         styles_zoom: config.pdf_zoom_factor,
         writeResp: false,
@@ -78,7 +70,7 @@ module.exports = async (ctx, next) => {
 
     const buffer = await renderPdf(rendered);
 
-    const fname = `consent-${consentId}.pdf`;
+    const fname = `consent-${consent.consent_number}.pdf`;
 
     ctx.body = buffer;
     ctx.attachment(fname);

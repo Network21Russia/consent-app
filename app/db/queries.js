@@ -170,8 +170,10 @@ function _getConsentsQuery(filter = {}, count = false, limit = 10, offset = 0) {
     result.push('SELECT');
     result.push(`
                 consents.*,
-                SUM(1)                                                 AS consent_tickets,
-                SUM(IF(ISNULL(tickets.consent_id), 0, tickets.amount)) AS consent_tickets_amount
+                CONCAT(IF(type = 'code', '1', '2'), LPAD(consents.id, 5, '0'))   AS consent_number,
+                SUM(1)                                                           AS consent_tickets,
+                SUM(IF(ISNULL(tickets.consent_id), 0, tickets.amount))           AS consent_tickets_amount,
+                SUM(IF(ISNULL(tickets.consent_id), 0, tickets.surcharge_amount)) AS consent_tickets_surcharge_amount
     `);
     result.push('FROM consents');
     result.push(`LEFT JOIN tickets ON tickets.consent_id = consents.id`);
@@ -291,7 +293,7 @@ function _getTicketsQuery(filter = {}, count = false, limit = 10, offset = 0) {
 
     result.push('SELECT')
     if (count) {
-        result.push('count(*) AS count, sum(amount) AS sum');
+        result.push('count(*) AS count, sum(amount) AS sum, sum(surcharge_amount) AS surcharge_sum');
     } else {
         result.push('*, tickets.id AS ticket_id');
         if (filter.with_customers) {
@@ -338,7 +340,7 @@ function insertTicketsQuery() {
 }
 
 function insertConsentQuery() {
-    return 'INSERT INTO `consents`(`customer_id`, `signed_email`, `signed_name`, `signed_surname`, `signed_patronimic`) VALUES (?, ?, ?, ?, ?)'
+    return 'INSERT INTO `consents`(`customer_id`, `type`, `signed_email`, `signed_name`, `signed_surname`, `signed_patronimic`, `signed_pass_serial`, `signed_pass_number`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
 }
 
 function insertEmailQuery() {
@@ -354,7 +356,7 @@ function setEmailOpenQuery() {
 }
 
 function setTicketsConsentQuery() {
-    return "UPDATE `tickets` SET `consent_id` = ? WHERE id IN (?)";
+    return "UPDATE `tickets` SET `consent_id` = ?, `action` = ? WHERE id IN (?)";
 }
 
 function fillCodesTable() {

@@ -4,15 +4,26 @@ const postmark = require("postmark");
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
-const {getCustomersQuery, getTicketsQuery, getTicketsTotalsQuery, insertConsentQuery, setTicketsConsentQuery, insertEmailQuery, markConsentAsCodeSent} = require('../db/queries')
+const {
+    getCustomersQuery,
+    getTicketsQuery,
+    getTicketsTotalsQuery,
+    insertConsentQuery,
+    setTicketsConsentQuery,
+    insertEmailQuery,
+    markConsentAsCodeSent
+} = require('../db/queries')
 const renderPdf = require('../utils/render-pdf');
-const composeTickets = require('../utils/compose-tickets');
+const {composeTickets} = require('../utils/compose-tickets');
 const {genderify, isMale, isFemale} = require('../utils/genderify');
 const declension = require('../utils/declension');
 const formatMoney = require('../utils/format-money');
 const {formatDate} = require('../utils/format-date');
 
+const allowedConsentTypes = ['code', 'surcharge']
+
 module.exports = async (ctx, next) => {
+
     ctx.state.title = 'Соглашение';
 
     const hash = ctx.params.hash || '';
@@ -24,13 +35,15 @@ module.exports = async (ctx, next) => {
     const editedSurname = (ctx.request.body.surname || '');
     const editedName = (ctx.request.body.name || '');
     const editedPatronimic = (ctx.request.body.patronimic || '');
+    const editedPassSerial = (ctx.request.body.pass_serial || '');
+    const editedPassNumber = (ctx.request.body.pass_number || '');
 
     let query = getCustomersQuery({hash: true, email_template: true});
     const db = DatabaseConnection.getInstance(config.db);
 
-    try {
+    await db.executeQuery("START TRANSACTION");
 
-        await db.executeQuery("START TRANSACTION");
+    try {
 
         const result = await db.executeQuery(query, [config.emailTemplateConsentRequest, hash]);
 
@@ -58,8 +71,42 @@ module.exports = async (ctx, next) => {
             customer.patronimic = editedPatronimic;
         }
 
+        if (editedPassSerial) {
+            customer.pass_serial = editedPassSerial;
+        }
+
+        if (editedPassNumber) {
+            customer.pass_number = editedPassNumber;
+        }
+
+        const selected_tickets_ids = []
+        const consentTypes = {}
+
+        selected_tickets.forEach(t => {
+            let [action, subAction, ticketId] = t.split('-');
+            ticketId = ticketId * 1
+
+            if (allowedConsentTypes.indexOf(action) < 0) {
+                ctx.throw(500);
+            }
+
+            if (subAction < 1 || subAction > 3) {
+                ctx.throw(500);
+            }
+
+            const fullAction = `${action}-${subAction}`
+
+            consentTypes[action] = consentTypes[action] || {}
+            consentTypes[action]['_all'] = consentTypes[action]['_all'] || {items: [], sum: 0, surcharge_sum: 0}
+            consentTypes[action][fullAction] = consentTypes[action][fullAction] || {items: [], sum: 0, surcharge_sum: 0}
+            consentTypes[action]['_all'].items.push(ticketId)
+            consentTypes[action][fullAction].items.push(ticketId)
+
+            selected_tickets_ids.push(ticketId)
+        })
+
         const ticketsFilter = {customer: true, has_no_consent: true, id: true};
-        const params = [customer.id, selected_tickets]
+        const params = [customer.id, selected_tickets_ids]
 
         query = getTicketsQuery(ticketsFilter, -1, 0);
         const tickets = await db.executeQuery(query, params);
@@ -68,28 +115,75 @@ module.exports = async (ctx, next) => {
             ctx.throw(500);
         }
 
-        query = getTicketsTotalsQuery(ticketsFilter, -1, 0);
-        const ticketsTotalsRes = await db.executeQuery(query, params);
+        const ticketsMap = tickets.reduce(function (accumulator, t) {
+            accumulator[t.id] = t
+            return accumulator
+        }, {});
 
-        if (!(Array.isArray(ticketsTotalsRes) && ticketsTotalsRes.length)) {
-            ctx.throw(500);
+        const existingTicketsIds = Object.keys(ticketsMap)
+
+        for (let consentType in consentTypes) {
+            for (let action in consentTypes[consentType]) {
+                if (!consentTypes[consentType].hasOwnProperty(action)) {
+                    continue
+                }
+                consentTypes[consentType][action].items = consentTypes[consentType][action].items.filter(value => existingTicketsIds.includes(value))
+                if (!consentTypes[consentType][action].items.length) {
+                    delete consentTypes[consentType][action]
+                    break
+                }
+                consentTypes[consentType][action].items.forEach(id => {
+                    consentTypes[consentType][action].sum += ticketsMap[id].amount
+                    consentTypes[consentType][action].surcharge_sum += ticketsMap[id].surcharge_amount
+                })
+            }
         }
 
-        const ticketsTotals = ticketsTotalsRes[0];
+        let redirectUrl = `/customer/${hash}/success`
 
-        query = insertConsentQuery();
-        const insertResult = await db.executeQuery(query,
-            [customer.id, customer.email, customer.name, customer.surname, customer.patronimic]);
+        for (let consentType of allowedConsentTypes) {
+            if (!consentTypes[consentType]) {
+                continue
+            }
 
-        const consentId = insertResult.insertId || 0;
-        if (!consentId) {
-            ctx.throw(500);
+            query = insertConsentQuery();
+            const insertResult = await db.executeQuery(query,
+                [customer.id, consentType, customer.email, customer.name, customer.surname, customer.patronimic, customer.pass_serial, customer.pass_number]);
+
+            const consentId = insertResult.insertId || 0;
+            if (!consentId) {
+                ctx.throw(500);
+            }
+
+            consentTypes[consentType]['_consentId'] = consentId
+
+            for (let action in consentTypes[consentType]) {
+                if (!consentTypes[consentType].hasOwnProperty(action)) {
+                    continue
+                }
+
+                if (action.startsWith('_')) {
+                    continue
+                }
+
+                query = setTicketsConsentQuery();
+                await db.executeQuery(query, [consentId, action, consentTypes[consentType][action].items]);
+            }
+
+            if (consentType === 'code') {
+                // sending letter with consent and codes
+                continue
+            }
+
+            if (consentType === 'code') {
+                // redirect to sber
+                // redirectUrl = 'path to sber'
+            }
         }
 
-        query = setTicketsConsentQuery();
-        await db.executeQuery(query, [consentId, selected_tickets]);
+        await db.executeQuery("COMMIT");
 
-        const rendered = await ctx.render('consent', {
+        /*const rendered = await ctx.render('consent', {
             customer: customer,
             date: new Date(),
             consentSigner: config.consentSigner,
@@ -194,7 +288,7 @@ module.exports = async (ctx, next) => {
                     ordersData: ordersData,
                     consentsDeclensed: declension(1, "соглашение", "соглашения", "соглашений", {delimiter: ' '}),
                     codes: tickets.map((t, idx) => {
-                        return {index: idx+1, code: t.code}
+                        return {index: idx + 1, code: t.code}
                     }),
                     codesDeclensed: declension(totalTickets, "код", "кода", "кодов", {delimiter: ' '}),
                     totalTickets: totalTickets,
@@ -216,7 +310,7 @@ module.exports = async (ctx, next) => {
             }
 
             await db.executeQuery("COMMIT");
-        }
+        }*/
 
         ctx.redirect(`/customer/${hash}/success`);
 

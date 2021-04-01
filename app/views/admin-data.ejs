@@ -69,15 +69,15 @@
             <hr/>
 
             <div class="form-group">
-                <label class="pr-2">Тип кода:</label>
-                <% [1,2,3].forEach( function(value) { %>
+                <label class="pr-2">Тип кода:</label><br/>
+                <% codesTypes.forEach( function(value) { %>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="code_type" id="code_type_<%=value%>"
                            value="<%=value%>">
                     <label class="form-check-label" for="code_type_<%=value%>">
-                        <%= value %>
+                        <%= codesNames[value] %>
                     </label>
-                </div>
+                </div><br/>
                 <% }); %>
             </div>
 

@@ -43,9 +43,7 @@
             <table class="table table-striped table-hover table-bordered">
                 <thead class="thead-dark text-center">
                 <tr>
-                    <th class="align-middle" scope="col" rowspan="2">Фамилия</th>
-                    <th class="align-middle" scope="col" rowspan="2">Имя</th>
-                    <!--<th class="align-middle" scope="col" rowspan="2">Отчество</th>-->
+                    <th class="align-middle" scope="col" rowspan="2">ФИО</th>
                     <th class="align-middle" scope="col" rowspan="2">E-mail</th>
                     <th class="align-middle" scope="col" colspan="2">Билеты</th>
                     <th class="align-middle" scope="col" colspan="2">Письма</th>
@@ -62,9 +60,8 @@
                 <tbody>
                 <% customers.forEach( function(customer) { %>
                 <tr>
-                    <td class="align-middle"><%= customer.surname %></td>
-                    <td class="align-middle"><%= customer.name %></td>
-                    <!--<td class="align-middle"><%= customer.patronimic %></td>-->
+                    <td class="align-middle"><%-([customer.surname, customer.name, customer.patronimic].filter
+                        (Boolean).join(' ')).trim()%></td>
                     <td class="align-middle px-2">
                         <a href="/customer/<%= customer.url_hash %>" target="_blank" title="Смотреть страницу принятия согласия">
                             <%= customer.email %>

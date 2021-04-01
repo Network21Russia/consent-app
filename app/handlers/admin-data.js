@@ -29,12 +29,18 @@ const surnameCompletions = {
     male: ['ов', 'ев', 'ин', 'ын', 'ой', 'цкий', 'ский', 'цкой', 'ской']
 }
 
-const codesTypes = [1, 2, 3]
+const codesNames = {
+    1: 'Коды на 3 месяца Лидерской-Плюс подписки',
+    2: 'Коды на 4 месяца Лидерской подписки',
+    3: 'Коды на 6 месяцев Партнерской подписки',
+}
 
 const surcharges = {
     3700: 200,
     4000: 500,
 }
+
+const codesTypes = Object.keys(codesNames).map(c => +c)
 
 function getGender(dict, name, surname) {
 
@@ -139,7 +145,7 @@ module.exports = async (ctx) => {
 
                     const workSheetsFromBuffer = xlsx.parse(fs.readFileSync(path.resolve(ctx.request.files.file.path)));
 
-                    const rows = workSheetsFromBuffer["0"].data.slice(6).map(i => [i[0], codeType])
+                    const rows = workSheetsFromBuffer["0"].data.slice(8).map(i => [i[0], codeType])
 
                     addedCodesCount = rows.length;
 
@@ -353,6 +359,8 @@ module.exports = async (ctx) => {
         uploadSuccess: uploadSuccess,
         needMoreCodes: needMoreCodes,
         formAction: pagePath(ctx.state.activeMenu, null),
+        codesTypes,
+        codesNames,
     })
 
 }

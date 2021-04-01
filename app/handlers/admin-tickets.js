@@ -7,6 +7,18 @@ const {getTicketsQuery, getTicketsTotalsQuery} = require('../db/queries')
 const menu = require('../admin-menu');
 const pagePath = require('../utils/page-path');
 
+const codesNames = {
+    1: 'Код на 3 месяца<br>Лидерской-Плюс<br>подписки',
+    2: 'Код на 4 месяца<br>Лидерской подписки',
+    3: 'Код на 6 месяцев<br>Партнерской подписки',
+}
+
+const surchargeNames = {
+    1: 'для участия в WES<br>в Екатеринбурге<br>2&ndash;4.07.2021',
+    2: 'для участия в WES<br>в Москве<br>16&ndash;18.07.2021',
+    3: 'для участия в WES<br>в Ростове-на-Дону<br>23&ndash;25.07.2021',
+}
+
 module.exports = async (ctx, next) => {
 
     ctx.state.title = 'Отчет по билетам';
@@ -74,6 +86,8 @@ module.exports = async (ctx, next) => {
         hasConsent: hasConsent,
         search: search,
         hasFilters: filter_query.length > 0,
+        codesNames,
+        surchargeNames,
     })
 
 };

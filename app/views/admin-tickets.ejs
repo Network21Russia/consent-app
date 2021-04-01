@@ -27,7 +27,7 @@
             <table class="table table-striped table-hover table-bordered">
                 <thead class="thead-dark text-center">
                 <tr>
-                    <th class="align-middle" scope="col">Код билета</th>
+                    <th class="align-middle" scope="col">Код<br>билета</th>
                     <th class="align-middle" scope="col">ФИО</th>
                     <th class="align-middle" scope="col">E-mail</th>
                     <th class="align-middle" scope="col">Цена</th>
@@ -41,7 +41,8 @@
                 <% tickets.forEach( function(ticket) { %>
                     <tr>
                         <td class="align-middle"><%= ticket.ticket_id %></td>
-                        <td class="align-middle"><%= ticket.surname %> <%= ticket.name %> <%= ticket.patronimic %></td>
+                        <td class="align-middle">
+                            <%-([ticket.name, ticket.surname, ticket.patronimic].filter(Boolean).join('<br>')).trim()%>
                         <td class="align-middle">
                             <a href="/customer/<%= ticket.url_hash %>" target="_blank" title="Смотреть страницу принятия согласия">
                                 <%= ticket.email %>
@@ -55,17 +56,17 @@
                                 <a href="/admin/consents/<%= ticket.id %>" target="_blank" title="Смотреть согласие">
                                     да
                                 </a>
-
                             <% } else { %>
                                 нет
                             <% } %>
                         </td>
                         <td class="align-middle text-center">
                             <% if(ticket.consent_id) { %>
-                                <% if(ticket.action === 'surcharge') { %>
-                                    доплачено <%=ticket.surcharge_amount%>&nbsp;руб.
+                                <% if(ticket.action.startsWith('surcharge')) { let surchargeType = ticket.action.split('-').pop() %>
+                                    Доплата&nbsp;<%=ticket.surcharge_amount%>&nbsp;руб.<br/>
+                                    <%-surchargeNames[surchargeType]%>
                                 <% } else { let codeType = ticket.action.split('-').pop()%>
-                                    код (<%=codeType%>)<br/>
+                                    <%-codesNames[codeType]%><br/>
                                 <span class="text-nowrap"><%=ticket['code_type_' + codeType]%></span>
                                 <% } %>
                             <% } else { %>
