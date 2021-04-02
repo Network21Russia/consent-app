@@ -151,11 +151,14 @@ function _getConsentsQuery(filter = {}, count = false, limit = 10, offset = 0) {
     offset = offset || 0;
 
     let where_clause = '';
+    let having_clause = '';
 
     if (filter.customer_id) {
         where_clause = 'WHERE consents.customer_id = ?';
     } else if (filter.id) {
         where_clause = 'WHERE consents.id = ?';
+    } else if (filter.number) {
+        having_clause = 'HAVING consent_number = ?';
     }
 
     const result = [];
@@ -179,6 +182,7 @@ function _getConsentsQuery(filter = {}, count = false, limit = 10, offset = 0) {
     result.push(`LEFT JOIN tickets ON tickets.consent_id = consents.id`);
     result.push(where_clause);
     result.push('GROUP BY consents.id');
+    result.push(having_clause);
     result.push(') t');
 
     if (!count) {

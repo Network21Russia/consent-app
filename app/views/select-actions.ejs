@@ -194,9 +194,9 @@
             var parentTr = inputs[i].parentNode.parentNode;
 
             if (validate && action === 'empty') {
-                addClass(parentTr, 'text-red')
+                addClass(parentTr, 'text-danger')
             } else {
-                removeClass(parentTr, 'text-red')
+                removeClass(parentTr, 'text-danger')
             }
         }
 
@@ -244,9 +244,9 @@
             }
             if (!pers[i].value) {
                 persValid = false
-                addClass(parentTr, 'text-red')
+                addClass(parentTr, 'text-danger')
             } else {
-                removeClass(parentTr, 'text-red')
+                removeClass(parentTr, 'text-danger')
             }
         }
 
@@ -258,7 +258,7 @@
         if (!hasClass(parentTr, 'form-group')) {
             parentTr = parentTr.parentNode;
         }
-        removeClass(parentTr, 'text-red')
+        removeClass(parentTr, 'text-danger')
     }
 
     function init() {

@@ -15,14 +15,10 @@ const {
 } = require('../db/queries')
 const renderPdf = require('../utils/render-pdf');
 const {composeTickets, composeExchange, exchangeOptions, exchangeOptionsLetter} = require('../utils/compose-tickets');
-const {genderify, isMale, isFemale} = require('../utils/genderify');
-const declension = require('../utils/declension');
-const formatMoney = require('../utils/format-money');
-const {formatDate} = require('../utils/format-date');
 
 const allowedConsentTypes = ['code', 'surcharge']
 
-module.exports = async (ctx, next) => {
+module.exports = async (ctx) => {
 
     ctx.state.title = 'Соглашение';
 
@@ -199,7 +195,7 @@ module.exports = async (ctx, next) => {
 
                 const codesGroups = composedExchangeData.reduce(function (accumulator, current) {
                     accumulator[current.action] = accumulator[current.action] || {
-                        title: exchangeOptionsLetter[current.action],
+                        title: exchangeOptionsLetter[consentType][current.action],
                         codes: current.codes.map((c, idx) => {
                             return {index: idx + 1, code: c}
                         })
@@ -215,10 +211,7 @@ module.exports = async (ctx, next) => {
                     TrackLinks: 'none',
                     TemplateModel: {
                         name: consent.signed_name,
-                        gender: customer.gender,
-                        genderMale: isMale(customer.gender),
-                        genderFemale: isFemale(customer.gender),
-                        codesGroups: codesGroups,
+                        codesGroups: Object.values(codesGroups),
                     },
                     Attachments: [
                         {
@@ -236,15 +229,20 @@ module.exports = async (ctx, next) => {
                 const client = new postmark.ServerClient(config.emailPostmarkToken);
                 const sendingResult = await client.sendEmailBatchWithTemplates([sendingOptions, sendingControlOptions]);
 
+                const queryInsertEmail = insertEmailQuery();
+                const queryMarkConsent = markConsentAsCodeSent();
+
                 for (const r of sendingResult) {
                     if (r.ErrorCode) {
+                        ctx.log.error(r.ErrorCode + ' ' + e.Message);
                         continue;
                     }
                     if (r.To === config.emailAdminEmail) {
                         continue;
                     }
-                    const query = insertEmailQuery();
-                    await db.executeQuery(query, [r.MessageID, customer.id, config.emailTemplateCodes]);
+
+                    await db.executeQuery(queryInsertEmail, [r.MessageID, customer.id, config.emailTemplateCodes]);
+                    await db.executeQuery(queryMarkConsent, [consentId]);
                 }
 
                 continue
@@ -252,19 +250,17 @@ module.exports = async (ctx, next) => {
 
             if (consentType === 'code') {
                 // redirect to sber
-                // redirectUrl = 'path to sber'
+                redirectUrl = 'path to sber'
             }
         }
 
         await db.executeQuery("COMMIT");
 
-        ctx.redirect(`/customer/${hash}/success`);
+        ctx.redirect(redirectUrl);
 
     } catch (e) {
         ctx.log.error('rolling back transaction');
         await db.executeQuery("ROLLBACK");
         throw e;
     }
-
-
 };

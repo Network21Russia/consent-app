@@ -1,3 +1,7 @@
+{{#isAdminCopy}}
+<p><b style="color: red">Копия письма для администратора!</b></p>
+{{/isAdminCopy}}
+
 <h1>Добрый день, {{name}}!</h1>
 <p>Во&nbsp;вложении&nbsp;&mdash; копия подписанного Вами Соглашения о&nbsp;переуступке прав и&nbsp;обязанностей.</p>
 
@@ -5,7 +9,7 @@
 <ul>
     {{#each codesGroups}}
     <li>{{.title}}:
-        <table width="100%" border="0" cellspacing="0" cellpadding="5">
+        <table width="100%" border="0" cellspacing="0" cellpadding="5" class="codes">
             {{#each .codes}}
             <tr>
                 <td>Код №{{index}}</td>
@@ -13,7 +17,7 @@
             </tr>
             {{/each}}
         </table>
-        <br/>
+        <p>&nbsp;</p>
     </li>
     {{/each}}
 </ul>

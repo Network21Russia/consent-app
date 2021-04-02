@@ -8,7 +8,7 @@ const config = require('../config/config');
 const router = new Router();
 
 router
-    .get('/', async (ctx, next) => {
+    .get('/', async (ctx) => {
         ctx.redirect(config.officialSite);
     })
 
@@ -21,6 +21,8 @@ router
     .get('/customer/:hash', require('./handlers/customer-consent-view'))
     .post('/customer/:hash', KoaBody(), require('./handlers/customer-consent-sign'))
     .get('/customer/:hash/success', require('./handlers/customer-consent-success'))
+    .get('/customer/:hash/paid-success', require('./handlers/customer-paid-success'))
+    .get('/customer/:hash/paid-fail', require('./handlers/customer-paid-fail'))
 
     .get('/consent/template/:type', require('./handlers/consent-template'))
 
