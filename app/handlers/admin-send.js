@@ -5,10 +5,12 @@ const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
 const {
-    getCustomersQuery, getCustomersCountQuery, insertEmailQuery,
+    getCustomersQuery, getCustomersCountQuery, insertEmailQuery, getTicketsTotalsQuery,
 } = require('../db/queries')
 const menu = require('../admin-menu');
-const {genderify, isMale, isFemale} = require('../utils/genderify');
+const declension = require('../utils/declension');
+const formatMoney = require('../utils/format-money');
+const {genderify} = require('../utils/genderify');
 
 module.exports = async (ctx) => {
 
@@ -91,19 +93,31 @@ async function sendConsentRequestLetter(ctx, db, offset, itemsOnPage, hash) {
 
     for (const customer of result) {
         emailToCustomerId[customer.email] = customer.id;
+
+        const ticketsFilter = {customer: true, has_no_consent: true};
+
+        query = getTicketsTotalsQuery(ticketsFilter, -1, 0);
+        const ticketsTotalsRes = await db.executeQuery(query, [customer.id]);
+
+        if (!(Array.isArray(ticketsTotalsRes) && ticketsTotalsRes.length)) {
+            continue
+        }
+
+        const ticketsTotals = ticketsTotalsRes[0];
+
         batch.push({
             TemplateId: config.emailTemplateConsentRequest,
             From: config.emailSenderFrom,
             To: customer.email,
             TemplateModel: {
-                name: ([customer.name, customer.patronimic].filter(Boolean).join(' ')).trim(),
-                gender: customer.gender,
-                genderMale: isMale(customer.gender),
-                genderFemale: isFemale(customer.gender),
+                name: ([customer.name, customer.surname].filter(Boolean).join(' ')).trim(),
                 greeting: genderify(customer.gender, 'Уважаемый', 'Уважаемая'),
-                host: config.publicHost,
-                path: `/customer/${customer.url_hash}`,
                 url: `https://${config.publicHost}/customer/${customer.url_hash}`,
+                formattedSum: formatMoney(ticketsTotals.sum, 0, 3, ' ', ',').trim(),
+                count: ticketsTotals.count,
+                hasManyTickets: ticketsTotals.count > 1,
+                hasOneTicket: ticketsTotals.count <= 1,
+                declensedTickets: declension(ticketsTotals.count, "билет", "билета", "билетов", {printCount: false})
             },
         });
     }

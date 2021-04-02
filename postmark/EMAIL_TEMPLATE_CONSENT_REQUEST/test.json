@@ -1,0 +1,10 @@
+{
+  "greeting": "Уважаемая",
+  "name": "Ирина&nbsp;Беляева",
+  "hasManyTickets": true,
+  "hasOneTicket": false,
+  "count": 3,
+  "declensedTickets": "билета",
+  "formattedSum": "11 100",
+  "url": "https://consent.n21events.ru/customer/7A5CD8DFC3782D97512C074A26BE2766"
+}

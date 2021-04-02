@@ -206,8 +206,7 @@ module.exports = async (ctx) => {
                 const sendingOptions = {
                     TemplateId: config.emailTemplateCodes,
                     From: config.emailSenderFrom,
-                    // To: customer.email,
-                    To: 'james.kotoff@gmail.com',
+                    To: customer.email,
                     TrackLinks: 'none',
                     TemplateModel: {
                         name: consent.signed_name,

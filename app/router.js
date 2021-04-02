@@ -18,7 +18,7 @@ router
     .get('/styles.css', require('./handlers/styles'))
     .get('/scripts.js', require('./handlers/scripts'))
 
-    .get('/customer/:hash', require('./handlers/customer-consent-view'))
+    .get('/customer/:hash', require('./handlers/customer-select-actions'))
     .post('/customer/:hash', KoaBody(), require('./handlers/customer-consent-sign'))
     .get('/customer/:hash/success', require('./handlers/customer-consent-success'))
     .get('/customer/:hash/paid-success', require('./handlers/customer-paid-success'))
