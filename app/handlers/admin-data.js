@@ -309,7 +309,7 @@ module.exports = async (ctx) => {
                                         greeting: genderify(customer.gender, 'Уважаемый', 'Уважаемая'),
                                         host: config.publicHost,
                                         path: `/customer/${customer.url_hash}`,
-                                        url: `https://${config.publicHost}/customer/${customer.url_hash}`,
+                                        url: `${config.publicHost}/customer/${customer.url_hash}`,
                                     },
                                 });
                             }

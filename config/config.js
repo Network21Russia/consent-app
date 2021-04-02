@@ -50,6 +50,12 @@ const config = {
 
     pdf_zoom_factor: isProduction ? 0.75 : 1,
 
+    sberbank: {
+        username: getEnvVariable('SBERBANK_USERNAME', ''),
+        password: getEnvVariable('SBERBANK_PASSWORD', ''),
+        apiUri: getEnvVariable('SBERBANK_API', ''),
+    }
+
 };
 
 module.exports = config;

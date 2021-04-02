@@ -33,8 +33,11 @@
 | CONSENT_SIGNER                 | Name of person signing consent from headquarters |
 | EMAIL_ADMIN_EMAIL              | Email to send copies of signed consents for headquoters |
 | HASH_SECRET                    | Secret to make url hash |
+| SBERBANK_USERNAME              | Username in Sberbank REST API, to create payments |
+| SBERBANK_PASSWORD              | Password in Sberbank REST API, to create payments |
+| SBERBANK_API                   | Sberbank REST API url |
 
 ## Develoment and support
 
-Application developed and supported by Evgenii Strigo aka james.kotoff@gmail.com, in august-september of 2020.
+Application developed and supported by Evgenii Strigo aka james.kotoff@gmail.com, in august of 2020 - april 2021.
 

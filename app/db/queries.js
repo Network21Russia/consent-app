@@ -157,6 +157,8 @@ function _getConsentsQuery(filter = {}, count = false, limit = 10, offset = 0) {
         where_clause = 'WHERE consents.customer_id = ?';
     } else if (filter.id) {
         where_clause = 'WHERE consents.id = ?';
+    } else if (filter.externalOrderId) {
+        where_clause = 'WHERE consents.external_order_id = ?';
     } else if (filter.number) {
         having_clause = 'HAVING consent_number = ?';
     }
@@ -412,6 +414,10 @@ function markConsentAsCodeSent() {
     return "UPDATE `consents` SET `code_sent` = 1,`code_sent_at` = CURRENT_TIMESTAMP WHERE id = ?";
 }
 
+function markConsentAsPaid() {
+    return "UPDATE `consents` SET `payment_received` = 1,`payment_received_at` = CURRENT_TIMESTAMP WHERE id = ?";
+}
+
 function filterNewCustomers() {
     return `SELECT customers.id, email, name, surname, gender, HEX(hash) AS url_hash
             FROM customers
@@ -427,6 +433,11 @@ function filterNewCustomers() {
 function getUnusedCodes(type) {
     return `SELECT code FROM codes WHERE code_type = ${type} AND code NOT IN (SELECT code_type_${type} FROM tickets WHERE code_type_${type} IS NOT NULL) ORDER BY code DESC`;
 }
+
+function setConsentExternalOrderIdQuery() {
+    return "UPDATE `consents` SET `external_order_id` = ? WHERE `id` = ?";
+}
+
 
 
 module.exports = {
@@ -451,6 +462,8 @@ module.exports = {
     getCodesToSend: getCodesToSend,
     getCodesToSendCount: getCodesToSendCount,
     markConsentAsCodeSent: markConsentAsCodeSent,
+    markConsentAsPaid: markConsentAsPaid,
     filterNewCustomers: filterNewCustomers,
     getUnusedCodes: getUnusedCodes,
+    setConsentExternalOrderIdQuery: setConsentExternalOrderIdQuery,
 }

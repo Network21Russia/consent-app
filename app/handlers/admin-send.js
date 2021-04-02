@@ -112,7 +112,7 @@ async function sendConsentRequestLetter(ctx, db, offset, itemsOnPage, hash) {
             TemplateModel: {
                 name: ([customer.name, customer.surname].filter(Boolean).join(' ')).trim(),
                 greeting: genderify(customer.gender, 'Уважаемый', 'Уважаемая'),
-                url: `https://${config.publicHost}/customer/${customer.url_hash}`,
+                url: `${config.publicHost}/customer/${customer.url_hash}`,
                 formattedSum: formatMoney(ticketsTotals.sum, 0, 3, ' ', ',').trim(),
                 count: ticketsTotals.count,
                 hasManyTickets: ticketsTotals.count > 1,

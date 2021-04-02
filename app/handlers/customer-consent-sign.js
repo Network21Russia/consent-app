@@ -1,5 +1,5 @@
 'use strict';
-
+const SberbankAcquiring = require("sberbank-acq").default;
 const postmark = require("postmark");
 const DatabaseConnection = require('mysql-flexi-promise');
 
@@ -12,6 +12,7 @@ const {
     insertEmailQuery,
     markConsentAsCodeSent,
     getConsentsQuery,
+    setConsentExternalOrderIdQuery,
 } = require('../db/queries')
 const renderPdf = require('../utils/render-pdf');
 const {composeTickets, composeExchange, exchangeOptions, exchangeOptionsLetter} = require('../utils/compose-tickets');
@@ -233,7 +234,7 @@ module.exports = async (ctx) => {
 
                 for (const r of sendingResult) {
                     if (r.ErrorCode) {
-                        ctx.log.error(r.ErrorCode + ' ' + e.Message);
+                        ctx.log.error(r.ErrorCode + ' ' + r.Message);
                         continue;
                     }
                     if (r.To === config.emailAdminEmail) {
@@ -244,12 +245,43 @@ module.exports = async (ctx) => {
                     await db.executeQuery(queryMarkConsent, [consentId]);
                 }
 
-                continue
-            }
+            } else {
 
-            if (consentType === 'code') {
-                // redirect to sber
-                redirectUrl = 'path to sber'
+                const sberbankAcquiring = new SberbankAcquiring({
+                    credentials: {
+                        username: config.sberbank.username,
+                        password: config.sberbank.password,
+                    },
+                    restConfig: {
+                        apiUri: config.sberbank.apiUri,
+                    },
+                });
+
+                const registerOptions = {
+                    amount: consent.consent_tickets_surcharge_amount * 100,
+                    currency: '643',
+                    language: 'ru',
+                    orderNumber: `C-${consent.consent_number}`,
+                    returnUrl: `${config.publicHost}/customer/${hash}/paid`,
+                    failUrl: `${config.publicHost}/customer/${hash}/paid-fail`,
+                    description: `Доплата по Соглашению №${consent.consent_number}`,
+                    taxSystem: 1,
+                }
+
+                const result = await sberbankAcquiring.register(registerOptions);
+
+                if (!result.formUrl) {
+                    ctx.log.warn(result, 'cannot create order at sber');
+                    redirectUrl = `/customer/${hash}/${consentId}/retry?count=1`
+                } else {
+
+                    query = setConsentExternalOrderIdQuery()
+                    await db.executeQuery(query, [result.orderId, consentId]);
+
+                    // redirect to sber
+                    redirectUrl = result.formUrl
+
+                }
             }
         }
 

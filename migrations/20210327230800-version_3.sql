@@ -22,4 +22,7 @@ ALTER TABLE `consents`
     ADD `signed_pass_serial`  VARCHAR(4)                NULL     DEFAULT NULL COMMENT 'серия паспорта' AFTER `signed_patronimic`,
     ADD `signed_pass_number`  VARCHAR(6)                NULL     DEFAULT NULL COMMENT 'номер паспорта' AFTER `signed_pass_serial`,
     ADD `payment_received`    BOOLEAN                   NOT NULL DEFAULT FALSE COMMENT 'оплата получена' AFTER `code_sent_at`,
-    ADD `payment_received_at` DATETIME                  NULL     DEFAULT NULL COMMENT 'дата и время оплаты' AFTER `payment_received`;
+    ADD `payment_received_at` DATETIME                  NULL     DEFAULT NULL COMMENT 'дата и время оплаты' AFTER `payment_received`,
+    ADD `external_order_id`   VARCHAR(36)               NULL     DEFAULT NULL COMMENT 'номер заказа в Сбере' AFTER `payment_received_at`,
+    ADD INDEX `external_order_id_idx` (`external_order_id`)
+;
