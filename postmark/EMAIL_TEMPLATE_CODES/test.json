@@ -1,0 +1,27 @@
+{
+  "name": "Иван",
+  "codesGroups": [
+    {
+      "title": "3 месяца Лидерской-Плюс подписки",
+      "codes": [
+        {
+          "index": "1",
+          "code": "XXXX-FFFF-HHHH"
+        },
+        {
+          "index": "2",
+          "code": "XXXX-FFFF-YYYY"
+        }
+      ]
+    },
+    {
+      "title": "4 месяца Лидерской подписки",
+      "codes": [
+        {
+          "index": "1",
+          "code": "XXXX-FFFF-HHHH"
+        }
+      ]
+    }
+  ]
+}

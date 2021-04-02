@@ -66,8 +66,8 @@ module.exports = async (ctx) => {
 
     const emailTemplateNames = {};
     emailTemplateNames[config.emailTemplateConsentRequest] = 'Запрос согласия';
-    emailTemplateNames[config.emailTemplateConsentPdf] = 'Отправка PDF с согласием';
-    emailTemplateNames[config.emailTemplateCodes] = 'Отправка кодов активации';
+    emailTemplateNames[config.emailTemplateConsentPdf] = 'Отправка Согласия с доплатой';
+    emailTemplateNames[config.emailTemplateCodes] = 'Отправка Согласия и кодов активации';
 
     return ctx.render(template, {
         emails: result,

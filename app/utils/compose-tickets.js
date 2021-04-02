@@ -21,16 +21,22 @@ function composeTickets(tickets) {
 function composeExchange(tickets) {
     const ticketsComposed = {}
     tickets.forEach(t => {
-        ticketsComposed[ t.action] = ticketsComposed[ t.action] || {
-            action:  t.action,
+        ticketsComposed[t.action] = ticketsComposed[t.action] || {
+            action: t.action,
+            codes: [],
             count: 0,
             amount: t.amount,
             surcharge_amount: t.surcharge_amount,
             new_amount: t.amount + t.surcharge_amount,
             sum: 0,
         };
-        ticketsComposed[ t.action].count += 1;
-        ticketsComposed[ t.action].sum += t.amount;
+        ticketsComposed[t.action].count += 1;
+        ticketsComposed[t.action].sum += t.amount;
+        if (t.action.startsWith('code')) {
+            ticketsComposed[t.action].codes.push(
+                t['code_type_' + t.action.split('-').pop()]
+            )
+        }
     });
     return Object.values(ticketsComposed);
 }
@@ -48,4 +54,17 @@ const exchangeOptions = {
     }
 }
 
-module.exports = {composeTickets, composeExchange, exchangeOptions};
+const exchangeOptionsLetter = {
+    'code': {
+        'code-1': '3 месяца Лидерской-Плюс подписки',
+        'code-2': '4 месяца Лидерской подписки',
+        'code-3': '6 месяцев Партнерской подписки',
+    },
+    'surcharge': {
+        'surcharge-1': '',
+        'surcharge-2': '',
+        'surcharge-3': '',
+    }
+}
+
+module.exports = {composeTickets, composeExchange, exchangeOptions, exchangeOptionsLetter};
