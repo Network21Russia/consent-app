@@ -1,6 +1,6 @@
 {
   "name": "consent-app",
-  "version": "3.0.23",
+  "version": "3.0.24",
   "description": "Consent app for Network 21 Russia",
   "main": "index.js",
   "scripts": {
@@ -41,7 +41,7 @@
     "node-xlsx": "^0.16.1",
     "pino": "^6.5.1",
     "postmark": "^2.5.5",
-    "sberbank-acq": "github:JamesKotov/sberbank-acq#master",
+    "sberbank-acq-no-module": "^0.2.2",
     "sqlmigrate": "^2.1.0",
     "uglify-js": "^3.10.3"
   },

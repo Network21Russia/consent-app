@@ -1,6 +1,6 @@
 'use strict';
 
-const SberbankAcquiring = require("sberbank-acq").default;
+const SberbankAcquiring = require("sberbank-acq-no-module").default;
 const postmark = require("postmark");
 const DatabaseConnection = require('mysql-flexi-promise');
 
