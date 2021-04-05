@@ -13,6 +13,8 @@ const {
     insertCustomerQuery, getCustomerByEmailQuery, insertTicketsQuery, fillCodesTable, getTicketsQuery,
     filterNewCustomers, insertEmailQuery, getUnusedCodes, getTicketsTotalsQuery
 } = require('../db/queries')
+const declension = require('../utils/declension');
+const formatMoney = require('../utils/format-money');
 const {genderify} = require('../utils/genderify');
 const menu = require('../admin-menu');
 const pagePath = require('../utils/page-path');
