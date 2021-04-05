@@ -11,7 +11,7 @@ const DatabaseConnection = require('mysql-flexi-promise');
 const config = require('../../config/config');
 const {
     insertCustomerQuery, getCustomerByEmailQuery, insertTicketsQuery, fillCodesTable, getTicketsQuery,
-    filterNewCustomers, insertEmailQuery, getUnusedCodes
+    filterNewCustomers, insertEmailQuery, getUnusedCodes, getTicketsTotalsQuery
 } = require('../db/queries')
 const {genderify} = require('../utils/genderify');
 const menu = require('../admin-menu');
