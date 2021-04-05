@@ -3,16 +3,16 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-    <meta name="robots" content="noindex, nofollow" />
+    <meta name="robots" content="noindex, nofollow"/>
     <title></title>
     <style>
-     /*!
-     * Bootstrap Reboot v4.5.2 (https://getbootstrap.com/)
-     * Copyright 2011-2020 The Bootstrap Authors
-     * Copyright 2011-2020 Twitter, Inc.
-     * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
-     * Forked from Normalize.css, licensed MIT (https://github.com/necolas/normalize.css/blob/master/LICENSE.md)
-     */
+        /*!
+        * Bootstrap Reboot v4.5.2 (https://getbootstrap.com/)
+        * Copyright 2011-2020 The Bootstrap Authors
+        * Copyright 2011-2020 Twitter, Inc.
+        * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
+        * Forked from Normalize.css, licensed MIT (https://github.com/necolas/normalize.css/blob/master/LICENSE.md)
+        */
         *,
         *::before,
         *::after {
@@ -28,7 +28,7 @@
             line-height: 1.10;
             -webkit-text-size-adjust: 100%;
             -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-            zoom:<%=styles_zoom%>;
+            zoom: <%=styles_zoom%>;
             height: 261mm;
             width: 184mm;
             max-width: 184mm;
@@ -357,9 +357,28 @@
         .text-nowrap {
             white-space: nowrap;
         }
+
+        .container {
+           width: 100%;
+           display: block;
+        }
+
+        .row {
+            display: table;
+            width: 100%;
+        }
+
+        .row .col-sm {
+            padding: 0 0.5cm;
+            display: table-cell;
+            min-width: 33%;
+            width: 33%;
+            box-sizing: border-box;
+        }
+
     </style>
 </head>
 <body>
-    <%- body %>
+<%- body %>
 </body>
 </html>
