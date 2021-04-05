@@ -1,5 +1,4 @@
 'use strict';
-const SberbankAcquiring = require("sberbank-acq").default;
 const postmark = require("postmark");
 const DatabaseConnection = require('mysql-flexi-promise');
 
@@ -15,7 +14,13 @@ const {
     setConsentExternalOrderIdQuery,
 } = require('../db/queries')
 const renderPdf = require('../utils/render-pdf');
-const {composeTickets, composeExchange, exchangeOptions, exchangeOptionsLetter} = require('../utils/compose-tickets');
+const createSberPayment = require("../utils/sber-payment");
+const {
+    composeTickets,
+    composeExchange,
+    exchangeOptions,
+    exchangeOptionsLetter,
+} = require('../utils/compose-tickets');
 
 const allowedConsentTypes = ['code', 'surcharge']
 
@@ -247,28 +252,7 @@ module.exports = async (ctx) => {
 
             } else {
 
-                const sberbankAcquiring = new SberbankAcquiring({
-                    credentials: {
-                        username: config.sberbank.username,
-                        password: config.sberbank.password,
-                    },
-                    restConfig: {
-                        apiUri: config.sberbank.apiUri,
-                    },
-                });
-
-                const registerOptions = {
-                    amount: consent.consent_tickets_surcharge_amount * 100,
-                    currency: '643',
-                    language: 'ru',
-                    orderNumber: `C-${consent.consent_number}`,
-                    returnUrl: `${config.publicHost}/customer/${hash}/paid`,
-                    failUrl: `${config.publicHost}/customer/${hash}/${consentId}/paid-fail`,
-                    description: `Доплата по Соглашению №${consent.consent_number}`,
-                    taxSystem: 1,
-                }
-
-                const result = await sberbankAcquiring.register(registerOptions);
+                const result = await createSberPayment(config, customer, consent, consentTickets, 0)
 
                 if (!result.formUrl) {
                     ctx.log.warn(result, 'cannot create order at sber');

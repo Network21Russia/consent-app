@@ -67,4 +67,18 @@ const exchangeOptionsLetter = {
     }
 }
 
-module.exports = {composeTickets, composeExchange, exchangeOptions, exchangeOptionsLetter};
+const exchangeOptionsReceipt = {
+    'code': {
+        'code-1': '',
+        'code-2': '',
+        'code-3': '',
+    },
+    'surcharge': {
+        'surcharge-1': 'Доплата за билет на семинар WES в Екатеринбурге 2-4.07.2021 (#Е)',
+        'surcharge-2': 'Доплата за билет на семинар WES в Москве 16-18.07.2021 (#М)',
+        'surcharge-3': 'Доплата за билет на семинар WES в Ростове-на-Дону 23-25.07.2021 (#Р)',
+    }
+}
+
+
+module.exports = {composeTickets, composeExchange, exchangeOptions, exchangeOptionsLetter, exchangeOptionsReceipt};

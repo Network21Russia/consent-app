@@ -1,12 +1,13 @@
 'use strict';
 
-const SberbankAcquiring = require("sberbank-acq").default;
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
+const createSberPayment = require("../utils/sber-payment");
 const {
     getCustomersQuery,
     getConsentsQuery,
+    getTicketsQuery,
     setConsentExternalOrderIdQuery,
 } = require('../db/queries')
 
@@ -22,6 +23,8 @@ module.exports = async (ctx) => {
     if (!consentId) {
         ctx.throw(500);
     }
+
+    const retryCount = +ctx.query.count || 1;
 
 
     let redirectUrl = `${config.publicHost}/customer/${hash}/${consentId}/paid-fail`
@@ -57,32 +60,14 @@ module.exports = async (ctx) => {
             return ctx.redirect(`/customer/${hash}/paid-success`);
         }
 
-        const sberbankAcquiring = new SberbankAcquiring({
-            credentials: {
-                username: config.sberbank.username,
-                password: config.sberbank.password,
-            },
-            restConfig: {
-                apiUri: config.sberbank.apiUri,
-            },
-        });
+        query = getTicketsQuery({consent: true}, -1, 0);
+        const consentTickets = await db.executeQuery(query, [consent.id]);
 
-        const registerOptions = {
-            amount: consent.consent_tickets_surcharge_amount * 100,
-            currency: '643',
-            language: 'ru',
-            orderNumber: `C-${consent.consent_number}`,
-            returnUrl: `${config.publicHost}/customer/${hash}/paid`,
-            failUrl: `${config.publicHost}/customer/${hash}/${consent.id}/paid-fail`,
-            description: `Доплата по Соглашению №${consent.consent_number}`,
-            taxSystem: 1,
-        }
-
-        result = await sberbankAcquiring.register(registerOptions);
+        result = await createSberPayment(config, customer, consent, consentTickets, retryCount)
 
         if (!result.formUrl) {
             ctx.log.warn(result, 'cannot create order at sber');
-            const retryCount = +ctx.query.count || 1;
+
 
             if (retryCount > 10) {
                 redirectUrl = `${config.publicHost}/customer/${hash}/${consentId}/paid-fail`
