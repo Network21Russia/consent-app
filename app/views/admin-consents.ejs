@@ -49,10 +49,13 @@
                         <td class="align-middle text-center"><%= consent.consent_tickets %></td>
                         <td class="align-middle text-center"><%- formatMoney(consent.consent_tickets_amount, 0, 3, '&nbsp;', ',').trim() %></td>
                         <td class="align-middle text-center text-nowrap">
-                            <a href="/admin/pdf/<%= consent.id %>" title="Скачать"
-                               class="btn btn-success btn-sm">
-                                <i class="icon pdf"></i>
-                            </a>
+                            <% if((consent.type === 'surcharge' && consent.payment_received) || consent.type === 'code')
+                            { %>
+                                <a href="/admin/pdf/<%= consent.id %>" title="Скачать"
+                                   class="btn btn-success btn-sm">
+                                    <i class="icon pdf"></i>
+                                </a>
+                            <% } %>
                         </td>
                         <td class="align-middle text-center"><%- consent.type === 'surcharge' ? '&mdash;' : consent.code_sent ? 'Да' : 'Нет' %></td>
                         <td class="align-middle text-center"><%- consent.type === 'code' ? '&mdash;' : consent.payment_received ? 'Да' : 'Нет' %></td>
