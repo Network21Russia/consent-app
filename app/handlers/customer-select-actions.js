@@ -3,7 +3,7 @@
 const DatabaseConnection = require('mysql-flexi-promise');
 
 const config = require('../../config/config');
-const {getCustomersQuery, getTicketsQuery, getTicketsTotalsQuery} = require('../db/queries')
+const {getCustomersQuery, getTicketsQuery, getTicketsTotalsQuery, getConsentsQuery} = require('../db/queries')
 
 module.exports = async (ctx) => {
 
@@ -26,10 +26,22 @@ module.exports = async (ctx) => {
 
     let tickets = [];
     let ticketsTotals = {};
+    let unpaidConsents = []
 
     let template = 'select-actions';
     if (customer.rest_tickets <= 0) {
+
         template = 'no-consent';
+
+        query = getConsentsQuery({customer_id: true}, 1, 0);
+        const consents = await db.executeQuery(query, [customer.id]);
+        if ((Array.isArray(result) && result.length)) {
+            unpaidConsents = consents.filter(c => (c.type === 'surcharge' && !c.payment_received))
+            if (unpaidConsents.length) {
+                template = 'consent-retry-payment';
+            }
+        }
+
     } else {
         const ticketsFilter = {customer: true, has_no_consent: true};
 
@@ -58,6 +70,8 @@ module.exports = async (ctx) => {
         tickets: tickets,
         hasManyTickets: tickets.length > 1,
         ticketsTotals: ticketsTotals,
+        unpaidConsents: unpaidConsents,
+        hasMayUnpaidConsents: unpaidConsents.length > 1,
     })
 
 };

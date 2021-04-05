@@ -24,7 +24,7 @@ router
     .get('/customer/:hash/:consentId/retry', require('./handlers/consent-retry-payment'))
     .get('/customer/:hash/paid', require('./handlers/customer-paid-consent-send'))
     .get('/customer/:hash/paid-success', require('./handlers/customer-paid-success'))
-    .get('/customer/:hash/paid-fail', require('./handlers/customer-paid-fail'))
+    .get('/customer/:hash/:consentId/paid-fail', require('./handlers/customer-paid-fail'))
 
     .get('/consent/template/:type', require('./handlers/consent-template'))
 

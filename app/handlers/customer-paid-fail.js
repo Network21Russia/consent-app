@@ -9,8 +9,9 @@ module.exports = async (ctx) => {
         ctx.throw(500);
     }
 
+    const consentId = +ctx.params.consentId || 0;
 
     let template = 'payment-fail';
 
-    return ctx.render(template, {});
+    return ctx.render(template, {hash, consentId});
 };

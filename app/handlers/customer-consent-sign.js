@@ -263,7 +263,7 @@ module.exports = async (ctx) => {
                     language: 'ru',
                     orderNumber: `C-${consent.consent_number}`,
                     returnUrl: `${config.publicHost}/customer/${hash}/paid`,
-                    failUrl: `${config.publicHost}/customer/${hash}/paid-fail`,
+                    failUrl: `${config.publicHost}/customer/${hash}/${consentId}/paid-fail`,
                     description: `Доплата по Соглашению №${consent.consent_number}`,
                     taxSystem: 1,
                 }

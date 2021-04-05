@@ -24,7 +24,7 @@ module.exports = async (ctx) => {
     }
 
 
-    let redirectUrl = `${config.publicHost}/customer/${hash}/paid-fail`
+    let redirectUrl = `${config.publicHost}/customer/${hash}/${consentId}/paid-fail`
 
     let query = getCustomersQuery({hash: true});
     const db = DatabaseConnection.getInstance(config.db);
@@ -73,7 +73,7 @@ module.exports = async (ctx) => {
             language: 'ru',
             orderNumber: `C-${consent.consent_number}`,
             returnUrl: `${config.publicHost}/customer/${hash}/paid`,
-            failUrl: `${config.publicHost}/customer/${hash}/paid-fail`,
+            failUrl: `${config.publicHost}/customer/${hash}/${consent.id}/paid-fail`,
             description: `Доплата по Соглашению №${consent.consent_number}`,
             taxSystem: 1,
         }
@@ -85,7 +85,7 @@ module.exports = async (ctx) => {
             const retryCount = +ctx.query.count || 1;
 
             if (retryCount > 10) {
-                redirectUrl = `${config.publicHost}/customer/${hash}/paid-fail`
+                redirectUrl = `${config.publicHost}/customer/${hash}/${consentId}/paid-fail`
             } else {
                 redirectUrl = `/customer/${hash}/${consent.id}/retry?count=${retryCount + 1}`
             }

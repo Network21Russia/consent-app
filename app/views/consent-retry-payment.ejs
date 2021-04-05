@@ -1,0 +1,27 @@
+<div class="row">
+    <div class="col">
+
+            <h1 class="text-center mb-4"><%= genderify(customer.gender, 'Уважаемый', 'Уважаемая') %>
+                <%-
+                ([customer.name, customer.surname].filter(Boolean).join('&nbsp;')).trim()
+                %>!
+            </h1>
+
+            <p  class="text-center">У вас есть
+                <%= pluralize(hasMayUnpaidConsents, 'неоплаченные Соглашения', 'неоплаченное Соглашение')%>.
+                Для оплаты нажмите на кнопку ниже:</p>
+
+        <% for (var i = 0; i < unpaidConsents.length;  i++ ) { let consent = unpaidConsents[i] %>
+            <p class="text-center mt-4">
+                <a class="btn btn-primary submit"
+                   href="/customer/<%=customer.url_hash%>/<%=consent.id%>/retry"
+                   tabindex="300<%= i %>" >
+                    Подписать Соглашение
+                    и&nbsp;доплатить&nbsp;<%-formatMoney(consent.consent_tickets_surcharge_amount, 0, 3, '&nbsp;', ',')
+                            .trim() %>&nbsp;руб.
+                </a>
+            </p>
+        <% } %>
+
+    </div>
+</div>

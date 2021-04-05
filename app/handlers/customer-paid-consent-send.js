@@ -26,7 +26,7 @@ module.exports = async (ctx) => {
 
     const orderId = ctx.query.orderId || '';
 
-    let redirectUrl = `${config.publicHost}/customer/${hash}/paid-fail`
+    let redirectUrl = `${config.publicHost}/customer/${hash}/0/paid-fail`
 
     let query = getCustomersQuery({hash: true});
     const db = DatabaseConnection.getInstance(config.db);
@@ -54,6 +54,8 @@ module.exports = async (ctx) => {
         if (consent.customer_id !== customer.id) {
             ctx.throw(500);
         }
+
+        redirectUrl = `${config.publicHost}/customer/${hash}/${consent.id}/paid-fail`
 
         const sberbankAcquiring = new SberbankAcquiring({
             credentials: {
