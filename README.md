@@ -30,7 +30,6 @@
 | EMAIL_SENDER_FROM              | Email from which letters will be sending |
 | EMAIL_TEMPLATE_CONSENT_REQUEST | Template id in Postmark for letter with consent request |
 | EMAIL_TEMPLATE_CONSENT_PDF     | Template id in Postmark for letter with consent confirm |
-| CONSENT_SIGNER                 | Name of person signing consent from headquarters |
 | EMAIL_ADMIN_EMAIL              | Email to send copies of signed consents for headquoters |
 | HASH_SECRET                    | Secret to make url hash |
 | SBERBANK_USERNAME              | Username in Sberbank REST API, to create payments |
