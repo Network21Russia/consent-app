@@ -1,6 +1,6 @@
 {
   "name": "consent-app",
-  "version": "3.0.19",
+  "version": "3.0.20",
   "description": "Consent app for Network 21 Russia",
   "main": "index.js",
   "scripts": {

@@ -53,6 +53,10 @@ module.exports = async (ctx) => {
             ctx.throw(500);
         }
 
+        if (consent.payment_received) {
+            return ctx.redirect(`/customer/${hash}/paid-success`);
+        }
+
         const sberbankAcquiring = new SberbankAcquiring({
             credentials: {
                 username: config.sberbank.username,
