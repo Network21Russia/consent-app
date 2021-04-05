@@ -13,7 +13,7 @@ const {
     insertCustomerQuery, getCustomerByEmailQuery, insertTicketsQuery, fillCodesTable, getTicketsQuery,
     filterNewCustomers, insertEmailQuery, getUnusedCodes
 } = require('../db/queries')
-const {genderify, isMale, isFemale} = require('../utils/genderify');
+const {genderify} = require('../utils/genderify');
 const menu = require('../admin-menu');
 const pagePath = require('../utils/page-path');
 
@@ -140,6 +140,7 @@ module.exports = async (ctx) => {
                     const codeType = +(ctx.request.body.code_type) || 0
 
                     if (codesTypes.indexOf(codeType) < 0) {
+                        // noinspection ExceptionCaughtLocallyJS
                         throw new Error('invalid codeType')
                     }
 
@@ -297,19 +298,31 @@ module.exports = async (ctx) => {
 
                             for (const customer of customers) {
                                 emailToCustomerId[customer.email] = customer.id;
+
+                                const ticketsFilter = {customer: true, has_no_consent: true};
+
+                                const query = getTicketsTotalsQuery(ticketsFilter, -1, 0);
+                                const ticketsTotalsRes = await db.executeQuery(query, [customer.id]);
+
+                                if (!(Array.isArray(ticketsTotalsRes) && ticketsTotalsRes.length)) {
+                                    continue
+                                }
+
+                                const ticketsTotals = ticketsTotalsRes[0];
+
                                 batch.push({
                                     TemplateId: config.emailTemplateConsentRequest,
                                     From: config.emailSenderFrom,
                                     To: customer.email,
                                     TemplateModel: {
-                                        name: ([customer.name, customer.patronimic].filter(Boolean).join(' ')).trim(),
-                                        gender: customer.gender,
-                                        genderMale: isMale(customer.gender),
-                                        genderFemale: isFemale(customer.gender),
+                                        name: ([customer.name, customer.surname].filter(Boolean).join(' ')).trim(),
                                         greeting: genderify(customer.gender, 'Уважаемый', 'Уважаемая'),
-                                        host: config.publicHost,
-                                        path: `/customer/${customer.url_hash}`,
                                         url: `${config.publicHost}/customer/${customer.url_hash}`,
+                                        formattedSum: formatMoney(ticketsTotals.sum, 0, 3, ' ', ',').trim(),
+                                        count: ticketsTotals.count,
+                                        hasManyTickets: ticketsTotals.count > 1,
+                                        hasOneTicket: ticketsTotals.count <= 1,
+                                        declensedTickets: declension(ticketsTotals.count, "билет", "билета", "билетов", {printCount: false})
                                     },
                                 });
                             }
