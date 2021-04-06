@@ -50,11 +50,21 @@ async function createSberPayment(config, customer, consent, tickets, retryCounte
 
     const headingCartItem = getCartItem(`Соглашение № ${consent.consent_number}`, 0, consent.consent_number, 1)
 
-    const cartItems = [headingCartItem].concat(tickets.reduce((accumulator, current, idx) => {
+    const cartItems = [headingCartItem].concat(Object.values(tickets.reduce((accumulator, current) => {
         const name = exchangeOptionsReceipt['surcharge'][current.action].replace('#', current.order_number)
-        accumulator.push(getCartItem(name, current.surcharge_amount, name.match(re)[1], idx + 2))
+        const item = getCartItem(name, current.surcharge_amount, name.match(re)[1], 0)
+        if (accumulator[item.itemCode]) {
+            accumulator[item.itemCode].quantity.value++
+        } else {
+            accumulator[item.itemCode] = item
+        }
         return accumulator
-    }, []))
+    }, {})))
+
+    cartItems.forEach((item, index) => {
+        item.itemAmount = item.itemPrice * item.quantity.value;
+        item.positionId = (index + 1) + ''
+    })
 
     const orderBundle = {
         "customerDetails": {"email": customer.email},
