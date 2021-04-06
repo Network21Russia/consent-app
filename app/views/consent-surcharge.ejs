@@ -76,7 +76,7 @@
             по&nbsp;ранее оплаченным нижеследующим заказам, а&nbsp;именно:
         </p>
 
-        <ul>
+        <ul class="accent">
             <% for (var i = 0; i < composedTickets.length;  i++ ) { let ticket = composedTickets[i] %>
             <li>заказ №<%= ticket.order_number %> на
                 <%- declension(ticket.count, "билет", "билета", "билетов") %>
@@ -96,7 +96,7 @@
             Стороны&nbsp;2 n21events.ru по&nbsp;31&nbsp;мая 2021 года включительно, тем самым получая следующие права
             участия в&nbsp;WES семинарах системы &laquo;Нетворк 21&raquo;:</p>
 
-        <ul>
+        <ul class="accent">
             <% for (var i = 0; i < composeExchange.length;  i++ ) { let exchange = composeExchange[i] %>
             <li><i><%- declension(exchange.count, "билет", "билета", "билетов") %></i>
                 <span class="selected-amount text-nowrap">по цене <%- formatMoney(exchange.new_amount, 0, 3, '&nbsp;', ',').trim() %></span>&nbsp;руб.

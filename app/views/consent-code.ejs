@@ -61,7 +61,7 @@
             <span class="text-nowrap">2020&mdash;2021 гг.</span>
             по&nbsp;ранее оплаченным нижеследующим заказам, а&nbsp;именно:
         </p>
-        <ul>
+        <ul class="accent">
             <% for (var i = 0; i < composedTickets.length;  i++ ) { let ticket = composedTickets[i] %>
             <li>заказ №<%= ticket.order_number %> на
                 <%- declension(ticket.count, "билет", "билета", "билетов") %>
@@ -95,7 +95,7 @@
             варианты подписки на&nbsp;электронную платформу N21 Mobile:
         </p>
 
-        <ul>
+        <ul class="accent">
             <% for (var i = 0; i < composeExchange.length;  i++ ) { let exchange = composeExchange[i] %>
             <li><%- exchangeOptions[exchange.action] %>&nbsp;&mdash;
                 <i><%- declension(exchange.count, "активационный код", "активационных кода", "активационных кодов") %></i>;
