@@ -33,7 +33,7 @@ module.exports = async (ctx) => {
 
         template = 'no-consent';
 
-        query = getConsentsQuery({customer_id: true}, 1, 0);
+        query = getConsentsQuery({customer_id: true}, 100, 0);
         const consents = await db.executeQuery(query, [customer.id]);
         if ((Array.isArray(result) && result.length)) {
             unpaidConsents = consents.filter(c => (c.type === 'surcharge' && !c.payment_received))
