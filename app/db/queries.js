@@ -353,6 +353,10 @@ function insertEmailQuery() {
     return "INSERT INTO `emails`(`external_id`, `customer_id`, `template_id`) VALUES (UNHEX(REPLACE(?, '-', '')), ?, ?)";
 }
 
+function ensureEmailSentQuery() {
+    return "SELECT * FROM `emails` WHERE `customer_id` = ? AND `template_id` = ?";
+}
+
 function setEmailDeliveredQuery() {
     return "UPDATE `emails` SET `is_delivered` = 1,`delivered_datetime` = CURRENT_TIMESTAMP WHERE external_id = UNHEX(REPLACE(?, '-', ''))";
 }
@@ -455,6 +459,7 @@ module.exports = {
     insertTicketsQuery: insertTicketsQuery,
     insertConsentQuery: insertConsentQuery,
     insertEmailQuery: insertEmailQuery,
+    ensureEmailSentQuery: ensureEmailSentQuery,
     setEmailDeliveredQuery: setEmailDeliveredQuery,
     setEmailOpenQuery: setEmailOpenQuery,
     setTicketsConsentQuery: setTicketsConsentQuery,

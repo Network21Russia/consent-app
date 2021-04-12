@@ -11,6 +11,7 @@ const {
     insertEmailQuery,
     getConsentsQuery,
     markConsentAsPaid,
+    ensureEmailSentQuery,
 } = require('../db/queries')
 const renderPdf = require('../utils/render-pdf');
 const {composeTickets, composeExchange, exchangeOptions} = require('../utils/compose-tickets');
@@ -81,62 +82,67 @@ module.exports = async (ctx) => {
         query = markConsentAsPaid();
         await db.executeQuery(query, [consent.id]);
 
-        query = getTicketsQuery({consent: true}, -1, 0);
-        const consentTickets = await db.executeQuery(query, [consent.id]);
+        query = ensureEmailSentQuery()
+        const sent = await db.executeQuery(query, [customer.id, config.emailTemplateConsentPdf]);
+        if (!sent.length) {
 
-        const rendered = await ctx.render('consent-' + consent.type, {
-            isTemplate: false,
-            consent: consent,
-            customer: customer,
-            consentSigner: config.consentSigner,
-            composedTickets: composeTickets(consentTickets),
-            composeExchange: composeExchange(consentTickets),
-            exchangeOptions: exchangeOptions[consent.type],
-            layout: 'pdf',
-            styles_zoom: config.pdf_zoom_factor,
-            writeResp: false,
-        })
+            query = getTicketsQuery({consent: true}, -1, 0);
+            const consentTickets = await db.executeQuery(query, [consent.id]);
 
-        const fname = `consent-${consent.consent_number}.pdf`;
+            const rendered = await ctx.render('consent-' + consent.type, {
+                isTemplate: false,
+                consent: consent,
+                customer: customer,
+                consentSigner: config.consentSigner,
+                composedTickets: composeTickets(consentTickets),
+                composeExchange: composeExchange(consentTickets),
+                exchangeOptions: exchangeOptions[consent.type],
+                layout: 'pdf',
+                styles_zoom: config.pdf_zoom_factor,
+                writeResp: false,
+            })
 
-        const buffer = await renderPdf(rendered);
+            const fname = `consent-${consent.consent_number}.pdf`;
 
-        const sendingOptions = {
-            TemplateId: config.emailTemplateConsentPdf,
-            From: config.emailSenderFrom,
-            To: customer.email,
-            TrackLinks: 'none',
-            TemplateModel: {
-                name: consent.signed_name,
-            },
-            Attachments: [
-                {
-                    "Name": fname,
-                    "Content": buffer.toString('base64'),
-                    "ContentType": "application/pdf"
+            const buffer = await renderPdf(rendered);
+
+            const sendingOptions = {
+                TemplateId: config.emailTemplateConsentPdf,
+                From: config.emailSenderFrom,
+                To: customer.email,
+                TrackLinks: 'none',
+                TemplateModel: {
+                    name: consent.signed_name,
+                },
+                Attachments: [
+                    {
+                        "Name": fname,
+                        "Content": buffer.toString('base64'),
+                        "ContentType": "application/pdf"
+                    }
+                ],
+            };
+
+            const sendingControlOptions = JSON.parse(JSON.stringify(sendingOptions));
+            sendingControlOptions.To = config.emailAdminEmail;
+            sendingControlOptions.TemplateModel.isAdminCopy = true;
+
+            const client = new postmark.ServerClient(config.emailPostmarkToken);
+            const sendingResult = await client.sendEmailBatchWithTemplates([sendingOptions, sendingControlOptions]);
+
+            const queryInsertEmail = insertEmailQuery();
+
+            for (const r of sendingResult) {
+                if (r.ErrorCode) {
+                    ctx.log.error(r.ErrorCode + ' ' + r.Message);
+                    continue;
                 }
-            ],
-        };
+                if (r.To === config.emailAdminEmail) {
+                    continue;
+                }
 
-        const sendingControlOptions = JSON.parse(JSON.stringify(sendingOptions));
-        sendingControlOptions.To = config.emailAdminEmail;
-        sendingControlOptions.TemplateModel.isAdminCopy = true;
-
-        const client = new postmark.ServerClient(config.emailPostmarkToken);
-        const sendingResult = await client.sendEmailBatchWithTemplates([sendingOptions, sendingControlOptions]);
-
-        const queryInsertEmail = insertEmailQuery();
-
-        for (const r of sendingResult) {
-            if (r.ErrorCode) {
-                ctx.log.error(r.ErrorCode + ' ' + r.Message);
-                continue;
+                await db.executeQuery(queryInsertEmail, [r.MessageID, customer.id, config.emailTemplateConsentPdf]);
             }
-            if (r.To === config.emailAdminEmail) {
-                continue;
-            }
-
-            await db.executeQuery(queryInsertEmail, [r.MessageID, customer.id, config.emailTemplateConsentPdf]);
         }
 
         redirectUrl = `${config.publicHost}/customer/${hash}/paid-success`
