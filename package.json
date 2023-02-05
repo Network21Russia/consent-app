@@ -35,7 +35,7 @@
     "mime-types": "^2.1.27",
     "mysql": "^2.18.1",
     "mysql-flexi-promise": "^1.0.1",
-    "mysql2": "^2.1.0",
+    "mysql2": "^2.3.3",
     "node-dir": "^0.1.17",
     "node-html-parser": "^1.2.20",
     "node-xlsx": "^0.16.1",
