@@ -43,7 +43,7 @@
     "postmark": "^2.5.5",
     "sberbank-acq-no-module": "^0.2.2",
     "sqlmigrate": "^2.1.0",
-    "uglify-js": "^3.10.3"
+    "uglify-js": "^3.17.4"
   },
   "devDependencies": {
     "husky": "^4.3.6"
