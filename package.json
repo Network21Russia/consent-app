@@ -32,7 +32,7 @@
     "koa-mount": "^4.0.0",
     "koa-req-logger": "^1.5.3",
     "koa-sslify": "^4.0.3",
-    "mime-types": "^2.1.27",
+    "mime-types": "^2.1.35",
     "mysql": "^2.18.1",
     "mysql-flexi-promise": "^1.0.1",
     "mysql2": "^2.1.0",
