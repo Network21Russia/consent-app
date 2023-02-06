@@ -21,7 +21,7 @@
     "csso": "^4.0.3",
     "dsn-parser": "^1.0.3",
     "html-pdf": "^2.2.0",
-    "koa": "^2.13.0",
+    "koa": "^2.14.1",
     "koa-basic-auth": "^4.0.0",
     "koa-body": "^4.2.0",
     "koa-cache-control": "^2.0.0",
