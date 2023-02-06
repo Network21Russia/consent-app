@@ -38,7 +38,7 @@
     "mysql2": "^2.1.0",
     "node-dir": "^0.1.17",
     "node-html-parser": "^1.2.20",
-    "node-xlsx": "^0.16.1",
+    "node-xlsx": "^0.21.0",
     "pino": "^6.5.1",
     "postmark": "^2.5.5",
     "sberbank-acq-no-module": "^0.2.2",
