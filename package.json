@@ -16,7 +16,7 @@
     }
   },
   "dependencies": {
-    "@koa/router": "^9.4.0",
+    "@koa/router": "^11.0.2",
     "cheerio": "^1.0.0-rc.5",
     "csso": "^4.0.3",
     "dsn-parser": "^1.0.3",
