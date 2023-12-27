@@ -40,7 +40,7 @@
     "node-html-parser": "^1.2.20",
     "node-xlsx": "^0.16.1",
     "pino": "^6.5.1",
-    "postmark": "^2.5.5",
+    "postmark": "^4.0.0",
     "sberbank-acq-no-module": "^0.2.2",
     "sqlmigrate": "^2.1.0",
     "uglify-js": "^3.10.3"
